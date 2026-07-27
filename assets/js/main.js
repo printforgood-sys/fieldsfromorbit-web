@@ -180,12 +180,53 @@
   if (carousel) {
     var heroSlides = carousel.querySelectorAll(".hero-slide");
     var heroCurrent = 0;
+    var heroInterval = null;
+    var heroPaused = false;
+    var heroPrevBtn = document.getElementById("hero-prev");
+    var heroNextBtn = document.getElementById("hero-next");
+    var heroPauseBtn = document.getElementById("hero-pause");
+
+    function heroShow(i) {
+      heroSlides[heroCurrent].classList.remove("active");
+      heroCurrent = (i + heroSlides.length) % heroSlides.length;
+      heroSlides[heroCurrent].classList.add("active");
+    }
+    function heroNext() { heroShow(heroCurrent + 1); }
+    function heroPrev() { heroShow(heroCurrent - 1); }
+    function heroStart() {
+      if (heroSlides.length > 1 && !heroInterval) {
+        heroInterval = setInterval(heroNext, 4000);
+      }
+    }
+    function heroStop() {
+      if (heroInterval) { clearInterval(heroInterval); heroInterval = null; }
+    }
+
     if (heroSlides.length > 1) {
-      setInterval(function () {
-        heroSlides[heroCurrent].classList.remove("active");
-        heroCurrent = (heroCurrent + 1) % heroSlides.length;
-        heroSlides[heroCurrent].classList.add("active");
-      }, 4000);
+      heroStart();
+      if (heroPrevBtn) heroPrevBtn.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation(); heroPrev();
+      });
+      if (heroNextBtn) heroNextBtn.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation(); heroNext();
+      });
+      if (heroPauseBtn) heroPauseBtn.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        heroPaused = !heroPaused;
+        if (heroPaused) {
+          heroStop();
+          heroPauseBtn.innerHTML = "&#9654;";
+          heroPauseBtn.setAttribute("aria-label", "Play slideshow");
+        } else {
+          heroStart();
+          heroPauseBtn.innerHTML = "&#10073;&#10073;";
+          heroPauseBtn.setAttribute("aria-label", "Pause slideshow");
+        }
+      });
+    } else {
+      if (heroPrevBtn) heroPrevBtn.style.display = "none";
+      if (heroNextBtn) heroNextBtn.style.display = "none";
+      if (heroPauseBtn) heroPauseBtn.style.display = "none";
     }
   }
 

@@ -91,9 +91,10 @@
       "<h3>" + copy.title + "</h3>" +
       "<p>" + copy.body + "</p>" +
       '<form class="signup-form" data-source="' + copy.source + '" method="post" target="_blank" ' +
-      'action="https://YOUR-MAILCHIMP-DOMAIN.list-manage.com/subscribe/post?u=REPLACE_U&id=REPLACE_ID">' +
+      'action="https://fieldsfromorbit.us18.list-manage.com/subscribe/post?u=690262a37721cb1bb52b9566c&id=cdc4ff7f0b&f_id=00f1b0e6f0">' +
       '<input type="email" name="EMAIL" placeholder="you@example.com" required>' +
       '<input type="hidden" name="SOURCE_PAGE" value="' + copy.source + '">' +
+      '<div aria-hidden="true" style="position: absolute; left: -5000px;"><input type="text" name="b_690262a37721cb1bb52b9566c_cdc4ff7f0b" tabindex="-1" value=""></div>' +
       "<button type=\"submit\">Notify me</button>" +
       "</form>" +
       '<button class="soft-modal-close" id="soft-modal-close">No thanks</button>' +

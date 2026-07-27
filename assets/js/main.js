@@ -1,11 +1,17 @@
 // Fields From Orbit — site JS (v1 draft)
-// No frameworks, no localStorage restrictions here (real deployed site, not a
-// Claude artifact) — likes/cookie-consent use localStorage since there's no
-// backend yet. See README.md 06-website section: cross-visitor like counts
-// need a real backend before this is more than a per-browser preview.
+// No frameworks. Cookie-consent and "have I liked this" still use
+// localStorage (that's a per-browser preference, correctly local). Real
+// cross-visitor like counts are now backed by a small Cloudflare Worker +
+// KV store (wired 2026-07-27) — see LIKES_API below. Counts themselves are
+// never displayed on the site (matches the site's "quiet" like/vote
+// philosophy — likes influence Fan Favourites ordering, not shown as a
+// public number), only used to sort Fan Favourites by real popularity.
 
 (function () {
   "use strict";
+
+  // --- Real cross-visitor like counts (Cloudflare Worker + KV) ---
+  var LIKES_API = "https://ffo-likes-api.printforgood.workers.dev";
 
   // --- Mobile nav toggle ---
   var toggle = document.getElementById("nav-toggle");
@@ -65,6 +71,14 @@
       btn.querySelector(".like-icon").innerHTML = "&#9829;";
       btn.querySelector(".like-label").textContent = "Liked";
       openSoftModal("like");
+      // Best-effort: record the real, cross-visitor count server-side.
+      // Never blocks or alters the UI if this fails (offline, Worker
+      // down, etc.) — the local "Liked" state above already happened.
+      fetch(LIKES_API + "/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code }),
+      }).catch(function () {});
     });
   });
 
@@ -211,16 +225,37 @@
     });
   }
 
-  // --- Fan Favourites: nudge order using this browser's own likes as a preview ---
+  // --- Fan Favourites: order by real, cross-visitor like counts ---
   var favGrid = document.getElementById("favourites-grid");
   if (favGrid) {
     var items = Array.prototype.slice.call(favGrid.querySelectorAll(".grid-item"));
-    items.sort(function (a, b) {
-      var aLiked = likes[a.getAttribute("data-fav-code")] ? 1 : 0;
-      var bLiked = likes[b.getAttribute("data-fav-code")] ? 1 : 0;
-      return bLiked - aLiked;
-    });
-    items.forEach(function (item) { favGrid.appendChild(item); });
+    var codes = items.map(function (item) { return item.getAttribute("data-fav-code"); });
+
+    // Sort by this browser's own likes first so the page isn't blank/
+    // unordered while the real counts load, then re-sort once they arrive.
+    function sortByLocal() {
+      items.sort(function (a, b) {
+        var aLiked = likes[a.getAttribute("data-fav-code")] ? 1 : 0;
+        var bLiked = likes[b.getAttribute("data-fav-code")] ? 1 : 0;
+        return bLiked - aLiked;
+      });
+      items.forEach(function (item) { favGrid.appendChild(item); });
+    }
+    sortByLocal();
+
+    fetch(LIKES_API + "/counts?codes=" + encodeURIComponent(codes.join(",")))
+      .then(function (r) { return r.json(); })
+      .then(function (counts) {
+        items.sort(function (a, b) {
+          var aCount = counts[a.getAttribute("data-fav-code")] || 0;
+          var bCount = counts[b.getAttribute("data-fav-code")] || 0;
+          return bCount - aCount;
+        });
+        items.forEach(function (item) { favGrid.appendChild(item); });
+      })
+      .catch(function () {
+        // Worker unreachable — leave the this-browser-only ordering in place.
+      });
   }
 
   // --- Framed-print waitlist buttons (framed isn't sold yet) ---

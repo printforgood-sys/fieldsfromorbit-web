@@ -54,22 +54,22 @@
     localStorage.setItem("ffo_likes", JSON.stringify(likes));
   }
 
-  var likeBtns = document.querySelectorAll(".like-btn");
+  var likeBtns = document.querySelectorAll(".like-overlay");
   var likes = getLikes();
   likeBtns.forEach(function (btn) {
     var code = btn.getAttribute("data-code");
     if (likes[code]) {
       btn.setAttribute("aria-pressed", "true");
+      btn.setAttribute("aria-label", "Liked");
       btn.querySelector(".like-icon").innerHTML = "&#9829;"; // filled heart
-      btn.querySelector(".like-label").textContent = "Liked";
     }
     btn.addEventListener("click", function () {
       if (likes[code]) return; // one like per image per browser
       likes[code] = true;
       setLikes(likes);
       btn.setAttribute("aria-pressed", "true");
+      btn.setAttribute("aria-label", "Liked");
       btn.querySelector(".like-icon").innerHTML = "&#9829;";
-      btn.querySelector(".like-label").textContent = "Liked";
       openSoftModal("like");
       // Best-effort: record the real, cross-visitor count server-side.
       // Never blocks or alters the UI if this fails (offline, Worker

@@ -13,6 +13,10 @@
 
 * { box-sizing: border-box; }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -133,10 +137,10 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
   .hero-sub { margin: 0; }
 }
 
-/* Hero rotating image — as large as the viewport allows without cropping */
+/* Hero rotating image — large, but leaves room to peek the next section */
 .hero-carousel {
   position: relative;
-  width: min(90vw, calc(58vh * 0.714375));
+  width: min(90vw, calc(50vh * 0.714375));
   aspect-ratio: 1143 / 1600;
   margin: 0 auto;
   border-radius: 8px;
@@ -146,7 +150,41 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
   flex: none;
 }
 @media (min-width: 900px) {
-  .hero-carousel { width: min(46vw, calc(78vh * 0.714375)); }
+  .hero-carousel { width: min(42vw, calc(68vh * 0.714375)); }
+}
+
+/* Scroll cue */
+.scroll-cue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 26px;
+  color: var(--faint);
+  text-decoration: none;
+  font-family: 'DejaVu Sans Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  animation: scrollCueBounce 2.2s ease-in-out infinite;
+}
+.scroll-cue:hover { color: var(--accent-dark); }
+@keyframes scrollCueBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+/* Section kicker (browse-collection heading above filters) */
+.section-kicker {
+  text-align: center;
+  font-family: 'DejaVu Sans Mono', monospace;
+  font-size: 13px;
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+  margin: 44px 0 4px 0;
+  scroll-margin-top: 24px;
 }
 .hero-slide {
   position: absolute;

@@ -194,6 +194,21 @@
     var captionBlurb = document.getElementById("hero-caption-blurb");
     var captionInfo = document.getElementById("hero-caption-info");
 
+    // --- Windowed loading for hero slides ---
+    // Only the first slide ships a real `src` from the server (see
+    // build_site.py); every other slide holds its image URL in `data-src`
+    // until this pulls it in. Called for the current slide +/- 1 on every
+    // navigation, so at most ~3 of the 56 hero images are ever fetched at
+    // once, instead of all 56 racing each other on page load.
+    function heroLoadSlide(i) {
+      var slide = heroSlides[(i + heroSlides.length) % heroSlides.length];
+      var img = slide && slide.querySelector("img");
+      if (img && img.dataset.src) {
+        img.src = img.dataset.src;
+        delete img.dataset.src;
+      }
+    }
+
     // --- Discreet "time until next slide" progress bar ---
     // A thin bar rather than a numeric countdown -- reads as ambient
     // texture, not a clock. Restarted every time the active slide changes
@@ -224,6 +239,10 @@
       heroCurrent = (i + heroSlides.length) % heroSlides.length;
       var slide = heroSlides[heroCurrent];
       slide.classList.add("active");
+      // Keep a sliding window of the current slide +/- 1 loaded so
+      // navigation always feels instant, without ever fetching all 56.
+      heroLoadSlide(heroCurrent - 1);
+      heroLoadSlide(heroCurrent + 1);
       // Swap the caption panel to match whatever piece is now showing --
       // each hero-slide carries its own title/place/blurb/info as data-*
       // attributes (set at build time in build_site.py), so this is just a
@@ -261,6 +280,11 @@
     }
 
     if (heroSlides.length > 1) {
+      // Preload the neighbors of the initially-active slide so the first
+      // manual click or auto-advance is instant rather than triggering a
+      // fresh fetch at the moment of transition.
+      heroLoadSlide(heroCurrent - 1);
+      heroLoadSlide(heroCurrent + 1);
       heroStart();
       if (heroPrevBtn) heroPrevBtn.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation(); heroPrev();

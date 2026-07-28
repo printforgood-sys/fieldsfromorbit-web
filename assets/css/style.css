@@ -158,6 +158,12 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
    rather than overlaid on the image corners — overlaid arrows were close
    enough to the image that visitors aiming for an arrow sometimes landed
    on the image link instead and got sent to that piece's page by accident. */
+.hero-carousel-outer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
 .hero-carousel-wrap {
   display: flex;
   align-items: center;
@@ -243,12 +249,10 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
   z-index: 5;
 }
 .hero-pause {
-  position: absolute;
-  z-index: 5;
-  bottom: 10px;
-  right: 10px;
-  font-size: 10px;
-  padding: 6px 8px;
+  font-family: 'DejaVu Sans Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
 }
 
 /* Inline signup */

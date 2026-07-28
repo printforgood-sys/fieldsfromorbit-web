@@ -234,11 +234,11 @@
         heroPaused = !heroPaused;
         if (heroPaused) {
           heroStop();
-          heroPauseBtn.innerHTML = "&#9654;";
+          heroPauseBtn.innerHTML = "&#9654; Play";
           heroPauseBtn.setAttribute("aria-label", "Play slideshow");
         } else {
           heroStart();
-          heroPauseBtn.innerHTML = "&#10073;&#10073;";
+          heroPauseBtn.innerHTML = "&#10073;&#10073; Pause";
           heroPauseBtn.setAttribute("aria-label", "Pause slideshow");
         }
       });

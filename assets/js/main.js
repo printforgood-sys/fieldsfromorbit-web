@@ -194,6 +194,31 @@
     var captionBlurb = document.getElementById("hero-caption-blurb");
     var captionInfo = document.getElementById("hero-caption-info");
 
+    // --- Discreet "time until next slide" progress bar ---
+    // A thin bar rather than a numeric countdown -- reads as ambient
+    // texture, not a clock. Restarted every time the active slide changes
+    // (auto-advance OR a manual arrow click), so it always reflects the
+    // actual time until the *next* change, and reset to empty (not left
+    // mid-fill) while paused, since nothing is counting down then.
+    var HERO_INTERVAL_MS = 8000; // keep in sync with setInterval calls below
+    var progressBar = document.getElementById("hero-progress-bar");
+    function progressRestart() {
+      if (!progressBar) return;
+      progressBar.style.transition = "none";
+      progressBar.style.width = "0%";
+      // Force a reflow so the browser registers the 0% width before the
+      // transition below is re-applied -- otherwise it just jumps straight
+      // to 100% with no visible fill.
+      progressBar.offsetHeight;
+      progressBar.style.transition = "width " + (HERO_INTERVAL_MS / 1000) + "s linear";
+      progressBar.style.width = "100%";
+    }
+    function progressReset() {
+      if (!progressBar) return;
+      progressBar.style.transition = "none";
+      progressBar.style.width = "0%";
+    }
+
     function heroShow(i) {
       heroSlides[heroCurrent].classList.remove("active");
       heroCurrent = (i + heroSlides.length) % heroSlides.length;
@@ -209,16 +234,30 @@
         captionBlurb.textContent = slide.dataset.blurb;
         captionInfo.textContent = slide.dataset.info;
       }
+      // Re-sync the auto-advance timer to *now*, whether this change came
+      // from the timer ticking or a manual arrow click -- otherwise a
+      // manual click could be followed almost immediately by an unwanted
+      // auto-advance left over from the old schedule, and the progress bar
+      // would be lying about how long until that happens.
+      if (heroInterval) { clearInterval(heroInterval); heroInterval = null; }
+      if (!heroPaused && heroSlides.length > 1) {
+        heroInterval = setInterval(heroNext, HERO_INTERVAL_MS);
+        progressRestart();
+      } else {
+        progressReset();
+      }
     }
     function heroNext() { heroShow(heroCurrent + 1); }
     function heroPrev() { heroShow(heroCurrent - 1); }
     function heroStart() {
       if (heroSlides.length > 1 && !heroInterval) {
-        heroInterval = setInterval(heroNext, 8000);
+        heroInterval = setInterval(heroNext, HERO_INTERVAL_MS);
+        progressRestart();
       }
     }
     function heroStop() {
       if (heroInterval) { clearInterval(heroInterval); heroInterval = null; }
+      progressReset();
     }
 
     if (heroSlides.length > 1) {

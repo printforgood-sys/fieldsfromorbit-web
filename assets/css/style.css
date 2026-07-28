@@ -255,6 +255,26 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
   padding: 6px 12px;
 }
 
+/* Discreet countdown to the next auto-advance -- a thin bar rather than a
+   numeric countdown, so it reads as ambient texture, not a clock. Filled by
+   JS animating .hero-progress-bar's width from 0 to 100% over the same
+   duration as the carousel's auto-advance interval (see heroStart() in
+   main.js); frozen in place, not reset to zero, while paused. */
+.hero-progress {
+  width: min(74vw, calc(50vh * 0.714375));
+  max-width: 220px;
+  height: 3px;
+  background: var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.hero-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
 /* Inline signup */
 .signup-inline {
   background: var(--paper-soft);

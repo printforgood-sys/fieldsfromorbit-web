@@ -189,10 +189,26 @@
     var heroNextBtn = document.getElementById("hero-next");
     var heroPauseBtn = document.getElementById("hero-pause");
 
+    var captionTitle = document.getElementById("hero-caption-title");
+    var captionPlace = document.getElementById("hero-caption-place");
+    var captionBlurb = document.getElementById("hero-caption-blurb");
+    var captionInfo = document.getElementById("hero-caption-info");
+
     function heroShow(i) {
       heroSlides[heroCurrent].classList.remove("active");
       heroCurrent = (i + heroSlides.length) % heroSlides.length;
-      heroSlides[heroCurrent].classList.add("active");
+      var slide = heroSlides[heroCurrent];
+      slide.classList.add("active");
+      // Swap the caption panel to match whatever piece is now showing --
+      // each hero-slide carries its own title/place/blurb/info as data-*
+      // attributes (set at build time in build_site.py), so this is just a
+      // read, no fetch needed.
+      if (captionTitle && slide.dataset.title) {
+        captionTitle.textContent = slide.dataset.title;
+        captionPlace.textContent = slide.dataset.place;
+        captionBlurb.textContent = slide.dataset.blurb;
+        captionInfo.textContent = slide.dataset.info;
+      }
     }
     function heroNext() { heroShow(heroCurrent + 1); }
     function heroPrev() { heroShow(heroCurrent - 1); }

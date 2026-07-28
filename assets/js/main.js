@@ -214,7 +214,7 @@
     function heroPrev() { heroShow(heroCurrent - 1); }
     function heroStart() {
       if (heroSlides.length > 1 && !heroInterval) {
-        heroInterval = setInterval(heroNext, 4000);
+        heroInterval = setInterval(heroNext, 8000);
       }
     }
     function heroStop() {

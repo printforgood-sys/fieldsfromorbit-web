@@ -121,9 +121,12 @@
     return modal;
   }
   function openSoftModal(kind) {
-    var copyKey = (typeof kind === "string" && MODAL_COPY[kind]) ? kind : "like";
+    // `kind` is either a string key into MODAL_COPY, or a ready-made copy
+    // object (used by the per-piece waitlist buttons below, since their
+    // title/body/source depend on which piece and format was clicked).
+    var copy = (typeof kind === "string") ? (MODAL_COPY[kind] || MODAL_COPY.like) : kind;
     if (softModal) softModal.remove();
-    softModal = buildSoftModal(MODAL_COPY[copyKey]);
+    softModal = buildSoftModal(copy);
     softModal.classList.add("open");
   }
   function closeSoftModal() {
@@ -299,9 +302,36 @@
       });
   }
 
-  // --- Framed-print waitlist buttons (framed isn't sold yet) ---
+  // --- Waitlist buttons ---
+  // Two situations use this same button: (1) framed prints, which aren't
+  // sold for ANY piece yet, and (2) every format (digital/unframed/framed)
+  // on pieces that aren't listed on Etsy yet at all (most of the catalogue,
+  // as of the 2026-07-28 site expansion to all 56 ready pieces). Each click
+  // tags the Mailchimp signup with the piece code and format
+  // (SOURCE_PAGE like "waitlist:FFO-JP-001:digital") so real per-piece
+  // demand is visible in the list later, instead of one generic signal.
+  var FORMAT_LABELS = { digital: "digital download", unframed: "unframed print", framed: "framed print" };
   document.querySelectorAll(".waitlist-btn").forEach(function (btn) {
-    btn.addEventListener("click", function () { openSoftModal("framed-waitlist"); });
+    btn.addEventListener("click", function () {
+      var code = btn.getAttribute("data-code");
+      var format = btn.getAttribute("data-format") || "framed";
+      var title = btn.getAttribute("data-title");
+      if (!code) {
+        // No data attributes present -- fall back to the original generic
+        // framed-print copy so nothing breaks if this button shows up
+        // somewhere without the new data-* attributes.
+        openSoftModal("framed-waitlist");
+        return;
+      }
+      var formatLabel = FORMAT_LABELS[format] || format;
+      openSoftModal({
+        title: "Join the waitlist",
+        body: title
+          ? "We'll email you the moment the " + formatLabel + " of “" + title + "” is available."
+          : "We'll email you the moment this " + formatLabel + " is available.",
+        source: "waitlist:" + code + ":" + format,
+      });
+    });
   });
 
   // --- Signup forms: no-op notice until a real Mailchimp form action is wired in ---

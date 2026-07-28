@@ -503,6 +503,32 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
   margin: 0;
 }
 
+/* Mobile: the default (non-fit) zoom overlay is meant to be a detail-
+   inspection view you scroll/pinch around at full resolution. On a phone
+   viewport that "full resolution" is many times wider than the screen, and
+   because .zoom-overlay uses block layout (not flex), the browser just
+   dumps the image at the top-left corner with no centering — the visitor
+   sees an arbitrary sliver of the poster instead of the whole image. Below
+   the same 900px breakpoint used elsewhere in this file, start the image
+   fitted to the screen (like fit-mode) so the visitor sees the whole piece
+   first, then can pinch to zoom in on detail via touch-action: pinch-zoom. */
+@media (max-width: 899px) {
+  .zoom-overlay:not(.fit-mode) {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .zoom-overlay:not(.fit-mode).open { display: flex; }
+  .zoom-overlay:not(.fit-mode) img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    margin: 0;
+  }
+}
+
 /* Applied to <html> while the zoom overlay is open, so the page behind it
    can't also scroll — without this, both the page and the overlay have
    their own scrollbar/scroll position active at once. */

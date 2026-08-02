@@ -468,6 +468,15 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
   display: inline-block;
   max-width: 100%;
   width: auto;
+  /* This rule never set 'height', so on any box where max-height actually
+     binds (mobile, narrow width) the browser fell back to the HTML
+     height="1600"/height="1328" attribute as a definite used height and
+     applied max-height to THAT directly, decoupled from the width-driven
+     scale factor — stretching the poster instead of scaling it. Setting
+     height: auto explicitly makes both dimensions 'auto', so max-width and
+     max-height are resolved jointly against the image's real aspect ratio
+     (this is what fixed the mobile distortion reported 2026-08-02). */
+  height: auto;
   /* Cap height to a share of the actual viewport (whatever the visitor's
      monitor turns out to be) rather than scaling to the column's full
      width — a tall portrait poster otherwise renders taller than the

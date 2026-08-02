@@ -179,29 +179,38 @@
   }
 
   // --- Home page: hero rotating image ---
-  var carousel = document.getElementById("hero-carousel");
-  if (carousel) {
-    var heroSlides = carousel.querySelectorAll(".hero-slide");
-    var heroCurrent = 0;
-    var heroInterval = null;
-    var heroPaused = false;
-    var heroPrevBtn = document.getElementById("hero-prev");
-    var heroNextBtn = document.getElementById("hero-next");
-    var heroPauseBtn = document.getElementById("hero-pause");
+  // Two independent carousel instances -- SE Series (default) and Complete
+  // Gallery -- toggled via .hero-toggle-btn. Only the visible instance's
+  // auto-advance interval ever runs; the hidden one sits idle at no cost.
+  // Added 2026-08-02 when SE Series became the homepage default (see
+  // [[project_ffo_se_series]]); previously this was a single carousel.
+  var HERO_INTERVAL_MS = 8000; // keep in sync with setInterval calls below
+  var captionTitle = document.getElementById("hero-caption-title");
+  var captionPlace = document.getElementById("hero-caption-place");
+  var captionBlurb = document.getElementById("hero-caption-blurb");
+  var captionInfo = document.getElementById("hero-caption-info");
 
-    var captionTitle = document.getElementById("hero-caption-title");
-    var captionPlace = document.getElementById("hero-caption-place");
-    var captionBlurb = document.getElementById("hero-caption-blurb");
-    var captionInfo = document.getElementById("hero-caption-info");
+  function setupHeroCarousel(view, isDefaultView) {
+    var carousel = document.getElementById("hero-carousel-" + view);
+    if (!carousel) return null;
+    var slides = carousel.querySelectorAll(".hero-slide");
+    var prevBtn = document.getElementById("hero-prev-" + view);
+    var nextBtn = document.getElementById("hero-next-" + view);
+    var pauseBtn = document.getElementById("hero-pause-" + view);
+    var progressBar = document.getElementById("hero-progress-bar-" + view);
+    var current = 0;
+    var interval = null;
+    var paused = false;
 
     // --- Windowed loading for hero slides ---
-    // Only the first slide ships a real `src` from the server (see
-    // build_site.py); every other slide holds its image URL in `data-src`
-    // until this pulls it in. Called for the current slide +/- 1 on every
-    // navigation, so at most ~3 of the 56 hero images are ever fetched at
-    // once, instead of all 56 racing each other on page load.
-    function heroLoadSlide(i) {
-      var slide = heroSlides[(i + heroSlides.length) % heroSlides.length];
+    // Only the default view's first slide ships a real `src` from the
+    // server (see build_site.py); every other slide holds its image URL in
+    // `data-src` until this pulls it in, for the current slide +/- 1 on
+    // every navigation -- so at most ~3 images per instance are ever
+    // fetched at once, instead of all of them (56, for Complete Gallery)
+    // racing each other on page load.
+    function loadSlide(i) {
+      var slide = slides[(i + slides.length) % slides.length];
       var img = slide && slide.querySelector("img");
       if (img && img.dataset.src) {
         img.src = img.dataset.src;
@@ -212,11 +221,7 @@
     // --- Discreet "time until next slide" progress bar ---
     // A thin bar rather than a numeric countdown -- reads as ambient
     // texture, not a clock. Restarted every time the active slide changes
-    // (auto-advance OR a manual arrow click), so it always reflects the
-    // actual time until the *next* change, and reset to empty (not left
-    // mid-fill) while paused, since nothing is counting down then.
-    var HERO_INTERVAL_MS = 8000; // keep in sync with setInterval calls below
-    var progressBar = document.getElementById("hero-progress-bar");
+    // (auto-advance OR a manual arrow click), reset to empty while paused.
     function progressRestart() {
       if (!progressBar) return;
       progressBar.style.transition = "none";
@@ -233,83 +238,141 @@
       progressBar.style.transition = "none";
       progressBar.style.width = "0%";
     }
+    function updateCaption(slide) {
+      // Swap the shared caption panel to match whatever piece is now
+      // showing -- each hero-slide carries its own title/place/blurb/info
+      // as data-* attributes (set at build time), so this is just a read.
+      if (!slide || !captionTitle || !slide.dataset.title) return;
+      captionTitle.textContent = slide.dataset.title;
+      captionPlace.textContent = slide.dataset.place;
+      captionBlurb.textContent = slide.dataset.blurb;
+      captionInfo.textContent = slide.dataset.info;
+    }
 
-    function heroShow(i) {
-      heroSlides[heroCurrent].classList.remove("active");
-      heroCurrent = (i + heroSlides.length) % heroSlides.length;
-      var slide = heroSlides[heroCurrent];
+    function show(i) {
+      slides[current].classList.remove("active");
+      current = (i + slides.length) % slides.length;
+      var slide = slides[current];
       slide.classList.add("active");
-      // Keep a sliding window of the current slide +/- 1 loaded so
-      // navigation always feels instant, without ever fetching all 56.
-      heroLoadSlide(heroCurrent - 1);
-      heroLoadSlide(heroCurrent + 1);
-      // Swap the caption panel to match whatever piece is now showing --
-      // each hero-slide carries its own title/place/blurb/info as data-*
-      // attributes (set at build time in build_site.py), so this is just a
-      // read, no fetch needed.
-      if (captionTitle && slide.dataset.title) {
-        captionTitle.textContent = slide.dataset.title;
-        captionPlace.textContent = slide.dataset.place;
-        captionBlurb.textContent = slide.dataset.blurb;
-        captionInfo.textContent = slide.dataset.info;
-      }
+      loadSlide(current - 1);
+      loadSlide(current + 1);
+      updateCaption(slide);
       // Re-sync the auto-advance timer to *now*, whether this change came
-      // from the timer ticking or a manual arrow click -- otherwise a
-      // manual click could be followed almost immediately by an unwanted
-      // auto-advance left over from the old schedule, and the progress bar
-      // would be lying about how long until that happens.
-      if (heroInterval) { clearInterval(heroInterval); heroInterval = null; }
-      if (!heroPaused && heroSlides.length > 1) {
-        heroInterval = setInterval(heroNext, HERO_INTERVAL_MS);
+      // from the timer ticking or a manual arrow click.
+      if (interval) { clearInterval(interval); interval = null; }
+      if (!paused && slides.length > 1) {
+        interval = setInterval(next, HERO_INTERVAL_MS);
         progressRestart();
       } else {
         progressReset();
       }
     }
-    function heroNext() { heroShow(heroCurrent + 1); }
-    function heroPrev() { heroShow(heroCurrent - 1); }
-    function heroStart() {
-      if (heroSlides.length > 1 && !heroInterval) {
-        heroInterval = setInterval(heroNext, HERO_INTERVAL_MS);
+    function next() { show(current + 1); }
+    function prev() { show(current - 1); }
+    function start() {
+      if (slides.length > 1 && !interval && !paused) {
+        interval = setInterval(next, HERO_INTERVAL_MS);
         progressRestart();
       }
     }
-    function heroStop() {
-      if (heroInterval) { clearInterval(heroInterval); heroInterval = null; }
+    function stop() {
+      if (interval) { clearInterval(interval); interval = null; }
       progressReset();
     }
 
-    if (heroSlides.length > 1) {
+    if (slides.length > 1) {
       // Preload the neighbors of the initially-active slide so the first
       // manual click or auto-advance is instant rather than triggering a
       // fresh fetch at the moment of transition.
-      heroLoadSlide(heroCurrent - 1);
-      heroLoadSlide(heroCurrent + 1);
-      heroStart();
-      if (heroPrevBtn) heroPrevBtn.addEventListener("click", function (e) {
-        e.preventDefault(); e.stopPropagation(); heroPrev();
+      loadSlide(current - 1);
+      loadSlide(current + 1);
+      if (prevBtn) prevBtn.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation(); prev();
       });
-      if (heroNextBtn) heroNextBtn.addEventListener("click", function (e) {
-        e.preventDefault(); e.stopPropagation(); heroNext();
+      if (nextBtn) nextBtn.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation(); next();
       });
-      if (heroPauseBtn) heroPauseBtn.addEventListener("click", function (e) {
+      if (pauseBtn) pauseBtn.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation();
-        heroPaused = !heroPaused;
-        if (heroPaused) {
-          heroStop();
-          heroPauseBtn.innerHTML = "&#9654; Play";
-          heroPauseBtn.setAttribute("aria-label", "Play slideshow");
+        paused = !paused;
+        if (paused) {
+          stop();
+          pauseBtn.innerHTML = "&#9654; Play";
+          pauseBtn.setAttribute("aria-label", "Play slideshow");
         } else {
-          heroStart();
-          heroPauseBtn.innerHTML = "&#10073;&#10073; Pause";
-          heroPauseBtn.setAttribute("aria-label", "Pause slideshow");
+          start();
+          pauseBtn.innerHTML = "&#10073;&#10073; Pause";
+          pauseBtn.setAttribute("aria-label", "Pause slideshow");
         }
       });
     } else {
-      if (heroPrevBtn) heroPrevBtn.style.display = "none";
-      if (heroNextBtn) heroNextBtn.style.display = "none";
-      if (heroPauseBtn) heroPauseBtn.style.display = "none";
+      if (prevBtn) prevBtn.style.display = "none";
+      if (nextBtn) nextBtn.style.display = "none";
+      if (pauseBtn) pauseBtn.style.display = "none";
     }
+
+    // The default (SE Series) view's initial caption needs to be set on
+    // load, since it never goes through show() until the timer first ticks
+    // or an arrow is clicked.
+    if (isDefaultView && slides.length) updateCaption(slides[current]);
+
+    return {
+      start: start,
+      stop: stop,
+      reset: function () {
+        // Called when the visitor switches INTO this view via the toggle:
+        // jump back to slide 0 and start clean, always unpaused -- so
+        // switching views never resumes mid-cycle or inherits a stale
+        // "paused" state/button label from before.
+        paused = false;
+        if (pauseBtn) {
+          pauseBtn.innerHTML = "&#10073;&#10073; Pause";
+          pauseBtn.setAttribute("aria-label", "Pause slideshow");
+        }
+        if (slides.length) {
+          slides[current].classList.remove("active");
+          current = 0;
+          slides[0].classList.add("active");
+          loadSlide(0);
+          loadSlide(1);
+          updateCaption(slides[0]);
+        }
+        stop();
+        start();
+      },
+    };
+  }
+
+  var heroOuterEls = document.querySelectorAll(".hero-carousel-outer");
+  if (heroOuterEls.length) {
+    var HERO_DEFAULT_VIEW = "se";
+    var heroInstances = {};
+    heroOuterEls.forEach(function (outer) {
+      var view = outer.getAttribute("data-view");
+      heroInstances[view] = setupHeroCarousel(view, view === HERO_DEFAULT_VIEW);
+    });
+    if (heroInstances[HERO_DEFAULT_VIEW]) heroInstances[HERO_DEFAULT_VIEW].start();
+
+    var activeHeroView = HERO_DEFAULT_VIEW;
+    var heroToggleBtns = document.querySelectorAll(".hero-toggle-btn");
+    heroToggleBtns.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var view = btn.getAttribute("data-view");
+        if (view === activeHeroView || !heroInstances[view]) return;
+        heroToggleBtns.forEach(function (b) {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected", "true");
+        heroOuterEls.forEach(function (outer) {
+          outer.classList.toggle("hero-view-hidden", outer.getAttribute("data-view") !== view);
+        });
+        if (heroInstances[activeHeroView]) heroInstances[activeHeroView].stop();
+        activeHeroView = view;
+        heroInstances[view].reset();
+      });
+    });
   }
 
   // --- Home page: collection + country filters ---
@@ -389,7 +452,7 @@
   // tags the Mailchimp signup with the piece code and format
   // (SOURCE_PAGE like "waitlist:FFO-JP-001:digital") so real per-piece
   // demand is visible in the list later, instead of one generic signal.
-  var FORMAT_LABELS = { digital: "digital download", unframed: "unframed print", framed: "framed print" };
+  var FORMAT_LABELS = { digital: "digital download", unframed: "unframed print", framed: "framed print", "se-canvas": "gallery-wrap print" };
   document.querySelectorAll(".waitlist-btn").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var code = btn.getAttribute("data-code");

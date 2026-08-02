@@ -122,6 +122,34 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
 .tagline { font-style: italic; color: var(--faint); font-size: 15px; margin: 0 0 14px 0; }
 .hero-sub { max-width: 420px; margin: 0; color: var(--faint); font-size: 15px; }
 
+/* Toggle between the SE Series and Complete Gallery hero carousels. SE
+   Series is the default (see build_home() in build_site.py) -- the toggle
+   just swaps which .hero-carousel-outer instance is visible and running. */
+.hero-toggle { display: flex; justify-content: center; gap: 8px; margin: 18px 0 4px 0; }
+.hero-toggle-btn {
+  font-family: 'DejaVu Sans Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--faint);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.hero-toggle-btn:hover { color: var(--ink); }
+.hero-toggle-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* Two-class selector so this reliably beats .hero-carousel-outer's own
+   display:flex regardless of source order or origin -- a bare [hidden]
+   attribute does NOT win here (author stylesheet always beats the user-
+   agent stylesheet's [hidden]{display:none} at equal specificity; this bit
+   the cookie banner earlier for the same reason), so the hidden state is
+   applied as an explicit higher-specificity class instead. */
+.hero-carousel-outer.hero-view-hidden { display: none; }
+
 .hero-main {
   display: flex;
   flex-direction: column;
@@ -184,6 +212,23 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
 @media (min-width: 900px) {
   .hero-carousel-wrap { gap: 12px; }
   .hero-carousel { width: min(40vw, calc(68vh * 0.714375)); }
+}
+
+/* The SE Series carousel's poster images are a different shape than the
+   flagship ones (1328x1600 = 0.83 ratio, vs. flagship's 1143x1600 = 0.714 --
+   full-bleed gallery-wrap canvas vs. flat paper). The box above assumes the
+   flagship ratio for both its aspect-ratio AND its width formula (width is
+   derived from a target viewport-height, using 0.714375 as the width/height
+   multiplier) -- left as-is, SE's wider image would get letterboxed with a
+   visible cream gap top/bottom inside a too-narrow box. Override both the
+   box shape and the width formula's multiplier for the SE instance
+   specifically so it sizes correctly on its own terms. Added 2026-08-02. */
+#hero-carousel-se {
+  aspect-ratio: 1328 / 1600;
+  width: min(74vw, calc(50vh * 0.83));
+}
+@media (min-width: 900px) {
+  #hero-carousel-se { width: min(40vw, calc(68vh * 0.83)); }
 }
 
 /* Scroll cue */
@@ -267,6 +312,12 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
   background: var(--rule);
   border-radius: 2px;
   overflow: hidden;
+}
+/* Match the SE carousel's own width formula above, so the progress bar
+   underneath it isn't narrower than the box it belongs to. */
+#hero-progress-se { width: min(74vw, calc(50vh * 0.83)); }
+@media (min-width: 900px) {
+  #hero-progress-se { width: min(40vw, calc(68vh * 0.83)); }
 }
 .hero-progress-bar {
   height: 100%;
@@ -353,6 +404,10 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
 .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 .card-img { aspect-ratio: 1143 / 1600; overflow: hidden; background: var(--paper-soft); }
 .card-img img { width: 100%; height: 100%; object-fit: contain; }
+/* SE Series thumbnails (landing-page grid + "More from the SE Series" cards)
+   use the canvas posters' own 1328x1600 shape, not the flagship 1143x1600 --
+   same letterboxing fix as the hero carousel above. Added 2026-08-02. */
+.card-img.card-img-se { aspect-ratio: 1328 / 1600; }
 .card-body { padding: 12px 14px; }
 .card-body h3 { font-size: 16px; margin: 0 0 4px 0; }
 .card-place { font-size: 13px; color: var(--faint); margin: 0 0 4px 0; }

@@ -126,7 +126,15 @@
   var graticule = d3.geoGraticule10();
   var worldData = null;
   var W, H, dpr, baseScale = 0, zoomLevel = 1;
-  var MIN_ZOOM = 1, MAX_ZOOM = 6;
+  // MAX_ZOOM raised 6 -> 16 on 2026-08-03: Paul reported trouble on mobile
+  // separating pins that sit close together on screen (whether genuinely
+  // close real-world shoots under the 25km cluster threshold, or just close
+  // in the current projection). The tap hit-test radius is a FIXED 16px
+  // regardless of zoom (see handleClick below), so points spread further
+  // apart in screen space at higher zoom become individually tappable that
+  // weren't before -- raising the ceiling directly addresses this without
+  // changing the hit-test logic itself.
+  var MIN_ZOOM = 1, MAX_ZOOM = 16;
   var rotation = HOME_ROTATION.slice();
   var lastInteraction = 0;
   var visiblePoints = [];

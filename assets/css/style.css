@@ -742,6 +742,11 @@ html.lightbox-open body { overflow: hidden; height: 100%; }
 .globe-preview-body[hidden], .globe-preview-empty[hidden] { display: none; }
 .globe-preview-picker { padding: 16px 20px 0 20px; }
 .globe-preview-picker[hidden] { display: none; }
+/* .buy-line sets its own display:flex, which otherwise overrides the
+   [hidden] attribute's default display:none -- same gotcha already handled
+   above for .globe-preview-body/.globe-preview-empty/.globe-preview-picker,
+   just missed here on the first pass (2026-08-04). */
+.globe-preview-buylist .buy-line[hidden] { display: none; }
 .globe-preview-picker-label {
   font-family: 'DejaVu Sans Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--faint); margin-bottom: 8px;

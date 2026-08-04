@@ -452,7 +452,7 @@
   // tags the Mailchimp signup with the piece code and format
   // (SOURCE_PAGE like "waitlist:FFO-JP-001:digital") so real per-piece
   // demand is visible in the list later, instead of one generic signal.
-  var FORMAT_LABELS = { digital: "digital download", unframed: "unframed print", framed: "framed print", "se-canvas": "gallery-wrap print" };
+  var FORMAT_LABELS = { digital: "digital download", canvas: "canvas print", unframed: "unframed print", framed: "framed print" };
   document.querySelectorAll(".waitlist-btn").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var code = btn.getAttribute("data-code");

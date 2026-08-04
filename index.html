@@ -142,15 +142,21 @@
   var graticule = d3.geoGraticule10();
   var worldData = null;
   var W, H, dpr, baseScale = 0, zoomLevel = 1;
-  // MAX_ZOOM raised 6 -> 16 on 2026-08-03: Paul reported trouble on mobile
-  // separating pins that sit close together on screen (whether genuinely
-  // close real-world shoots under the 25km cluster threshold, or just close
-  // in the current projection). The tap hit-test radius is a FIXED 16px
-  // regardless of zoom (see handleClick below), so points spread further
-  // apart in screen space at higher zoom become individually tappable that
-  // weren't before -- raising the ceiling directly addresses this without
-  // changing the hit-test logic itself.
-  var MIN_ZOOM = 1, MAX_ZOOM = 16;
+  // MAX_ZOOM raised 6 -> 16 on 2026-08-03, then 16 -> 40 on 2026-08-04: Paul
+  // reported trouble on mobile (and again on desktop) separating pins that
+  // sit close together on screen (whether genuinely close real-world shoots
+  // under the 25km cluster threshold, or just close in the current
+  // projection). The tap hit-test radius is a FIXED 16px regardless of zoom
+  // (see handleClick below), so points spread further apart in screen space
+  // at higher zoom become individually tappable that weren't before --
+  // raising the ceiling directly addresses this without changing the
+  // hit-test logic itself.
+  var MIN_ZOOM = 1, MAX_ZOOM = 40;
+  // Once zoomed in past this, auto-rotation stays off (see tick()) and the
+  // cursor switches from grab/pan to a plain pointer (see applyZoom()) --
+  // added 2026-08-04 so picking out a close-together dot isn't fighting a
+  // still-spinning globe or an ambiguous hand cursor.
+  var ZOOM_INTERACT_THRESHOLD = 1.4;
   var rotation = HOME_ROTATION.slice();
   var lastInteraction = 0;
   var visiblePoints = [];
@@ -214,6 +220,7 @@
   function applyZoom(z){
     zoomLevel = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
     projection.scale(baseScale * zoomLevel);
+    canvas.classList.toggle('zoomed-in', zoomLevel > ZOOM_INTERACT_THRESHOLD);
   }
 
   canvas.addEventListener('pointerdown', function(e){
@@ -357,7 +364,7 @@
 
   function tick(){
     var now = performance.now();
-    if (!dragging && now - lastInteraction > 1500){
+    if (!dragging && zoomLevel <= ZOOM_INTERACT_THRESHOLD && now - lastInteraction > 1500){
       rotation[0] += 0.05;
       render();
     }

@@ -178,6 +178,39 @@
     overlay.addEventListener("click", closeOverlay);
   }
 
+  // --- Image page: bleed the black band behind the poster to the true
+  // left edge of the screen (added 2026-08-09, per Paul's follow-up on the
+  // black-letterbox change) ---
+  // .image-frame-bg sits in the LEFT column of a two-column grid
+  // (.image-page), so it can only ever bleed left -- the right side is
+  // bounded by the .image-info sidebar in the same row. How far it needs
+  // to pull left varies with viewport width AND which of the layout's
+  // three breakpoints (mobile single-column / 900px 1.9fr / 1300px 2.3fr)
+  // is active, so this measures the real gap live via
+  // getBoundingClientRect() rather than trying to precompute it with nested
+  // calc() across three breakpoints. The poster stays centered inside the
+  // band (justify-content: center, set in CSS), so as the band bleeds
+  // left the poster re-centers within it too, shifting left along with it.
+  var frameBg = document.querySelector(".image-frame-bg");
+  if (frameBg) {
+    function bleedFrameBgLeft() {
+      frameBg.style.marginLeft = "";
+      frameBg.style.width = "";
+      // Below 900px .image-page drops to a single column and the CSS
+      // above switches .image-frame-bg back to centered -- matches the
+      // @media (max-width: 899px) breakpoint used everywhere else in
+      // style.css, so skip the bleed there rather than fighting it.
+      if (window.innerWidth < 900) return;
+      var rect = frameBg.getBoundingClientRect();
+      if (rect.left > 0) {
+        frameBg.style.marginLeft = "-" + rect.left + "px";
+        frameBg.style.width = "calc(100% + " + rect.left + "px)";
+      }
+    }
+    bleedFrameBgLeft();
+    window.addEventListener("resize", bleedFrameBgLeft);
+  }
+
   // --- Home page: hero rotating image ---
   // Two independent carousel instances -- SE Series (default) and Complete
   // Gallery -- toggled via .hero-toggle-btn. Only the visible instance's

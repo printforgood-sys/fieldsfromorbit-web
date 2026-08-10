@@ -117,6 +117,38 @@
       </div>
     </div>
   </div>
+  <div class="globe-lightbox" id="globe-lightbox">
+    <div class="globe-lightbox-backdrop" id="globe-lightbox-backdrop"></div>
+    <div class="globe-lightbox-inner" role="dialog" aria-modal="true" aria-label="Enlarged view of the selected piece">
+      <button class="globe-lightbox-close" id="globe-lightbox-close" type="button" aria-label="Close">&times;</button>
+      <div class="globe-lightbox-imgpane">
+        <a class="globe-lightbox-imgwrap" id="globe-lightbox-link" href="#">
+          <img class="globe-lightbox-img" id="globe-lightbox-img" src="" alt="">
+        </a>
+      </div>
+      <div class="globe-lightbox-sidebar">
+        <div class="globe-preview-picker" id="globe-lightbox-picker" hidden></div>
+        <h3 class="globe-lightbox-title" id="globe-lightbox-title"></h3>
+        <p class="globe-lightbox-place" id="globe-lightbox-place"></p>
+        <p class="globe-lightbox-blurb" id="globe-lightbox-blurb"></p>
+        <p class="globe-lightbox-info" id="globe-lightbox-info"></p>
+        <div class="buy-list globe-lightbox-buylist">
+          <a class="buy-line" id="globe-lightbox-buy-link" href="#" target="_blank" rel="noopener" hidden>
+            <span>Buy Digital Download</span><span class="buy-price">$15</span>
+          </a>
+          <button class="buy-line waitlist-btn" id="globe-lightbox-buy-waitlist" type="button"
+                  data-code="" data-format="digital" data-title="" hidden>
+            <span>Digital download</span><span class="buy-price">join waitlist</span>
+          </button>
+          <button class="buy-line waitlist-btn" id="globe-lightbox-canvas-waitlist" type="button"
+                  data-code="" data-format="canvas" data-title="">
+            <span>Canvas print, 16&times;20&Prime;</span><span class="buy-price">join waitlist</span>
+          </button>
+        </div>
+        <a class="globe-lightbox-cta" id="globe-lightbox-cta" href="#">See full details &rarr;</a>
+      </div>
+    </div>
+  </div>
   <a class="scroll-cue" href="#browse-collection" aria-label="Scroll down to browse the collection">
     <span>Browse the collection</span>
     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 4v14m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -145,6 +177,27 @@
   var buyLinkEl = document.getElementById('globe-preview-buy-link');
   var buyWaitlistEl = document.getElementById('globe-preview-buy-waitlist');
   var canvasWaitlistEl = document.getElementById('globe-preview-canvas-waitlist');
+
+  // Lightbox refs, added 2026-08-09 so clicking a pin opens the piece
+  // near-full-screen (see [[project_ffo_homepage_globe_nav]] discussion) --
+  // same data as the sidebar preview above, just populated a second time
+  // into a bigger image pane + a fully-visible info sidebar rather than
+  // replacing the small preview card.
+  var lightboxEl = document.getElementById('globe-lightbox');
+  var lightboxBackdrop = document.getElementById('globe-lightbox-backdrop');
+  var lightboxCloseBtn = document.getElementById('globe-lightbox-close');
+  var lbImgEl = document.getElementById('globe-lightbox-img');
+  var lbLinkEl = document.getElementById('globe-lightbox-link');
+  var lbPickerEl = document.getElementById('globe-lightbox-picker');
+  var lbTitleEl = document.getElementById('globe-lightbox-title');
+  var lbPlaceEl = document.getElementById('globe-lightbox-place');
+  var lbBlurbEl = document.getElementById('globe-lightbox-blurb');
+  var lbInfoEl = document.getElementById('globe-lightbox-info');
+  var lbCtaEl = document.getElementById('globe-lightbox-cta');
+  var lbBuyLinkEl = document.getElementById('globe-lightbox-buy-link');
+  var lbBuyWaitlistEl = document.getElementById('globe-lightbox-buy-waitlist');
+  var lbCanvasWaitlistEl = document.getElementById('globe-lightbox-canvas-waitlist');
+  var lightboxOpen = false;
 
   var PREFIX = '';
   var SEED_TITLE = 'The Forest Braid No. 1';
@@ -318,6 +371,7 @@
     });
     if (!hit) return;
     showLocation(hit.loc);
+    openLightbox(hit.loc);
   }
 
   function showImage(img){
@@ -378,9 +432,82 @@
     }
   }
 
+  // --- Lightbox: near-full-screen takeover on pin click ---------------
+  // Mirrors showImage()/showLocation() above but targets the lightbox's
+  // own elements, so the small sidebar card and the lightbox can show two
+  // different images at once if picker buttons are clicked independently
+  // in each (harmless -- last one clicked just wins visually since only
+  // the lightbox is on screen while open).
+  function populateLightboxImage(img){
+    lbImgEl.src = PREFIX + img.thumb;
+    lbImgEl.alt = img.title + ' — satellite art print of ' + img.place;
+    lbLinkEl.href = PREFIX + img.url;
+    lbTitleEl.textContent = img.title;
+    lbPlaceEl.textContent = img.place;
+    lbBlurbEl.textContent = img.blurb;
+    lbInfoEl.textContent = img.coords + ' · ' + img.capture_date + ' · ' + img.collection_name;
+    lbCtaEl.href = PREFIX + img.url;
+
+    if (img.digital_url){
+      lbBuyLinkEl.hidden = false; lbBuyLinkEl.href = img.digital_url;
+      lbBuyWaitlistEl.hidden = true;
+    } else {
+      lbBuyLinkEl.hidden = true;
+      lbBuyWaitlistEl.hidden = false;
+      lbBuyWaitlistEl.setAttribute('data-code', img.ffo_code);
+      lbBuyWaitlistEl.setAttribute('data-title', img.title);
+    }
+    lbCanvasWaitlistEl.setAttribute('data-code', img.ffo_code);
+    lbCanvasWaitlistEl.setAttribute('data-title', img.title);
+  }
+
+  function populateLightboxLocation(loc){
+    if (loc.images.length === 1){
+      lbPickerEl.hidden = true; lbPickerEl.innerHTML = '';
+      populateLightboxImage(loc.images[0]);
+    } else {
+      lbPickerEl.hidden = false;
+      lbPickerEl.innerHTML = '';
+      var label = document.createElement('div');
+      label.className = 'globe-preview-picker-label';
+      label.textContent = loc.images.length + ' images at this location:';
+      lbPickerEl.appendChild(label);
+      loc.images.forEach(function(img, i){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'globe-preview-picker-btn' + (i===0 ? ' active' : '');
+        btn.textContent = img.title;
+        btn.addEventListener('click', function(){
+          Array.from(lbPickerEl.querySelectorAll('.globe-preview-picker-btn')).forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          populateLightboxImage(img);
+        });
+        lbPickerEl.appendChild(btn);
+      });
+      populateLightboxImage(loc.images[0]);
+    }
+  }
+
+  function openLightbox(loc){
+    populateLightboxLocation(loc);
+    lightboxOpen = true;
+    lightboxEl.classList.add('open');
+    document.documentElement.classList.add('lightbox-open');
+  }
+  function closeLightbox(){
+    lightboxOpen = false;
+    lightboxEl.classList.remove('open');
+    document.documentElement.classList.remove('lightbox-open');
+  }
+  lightboxBackdrop.addEventListener('click', closeLightbox);
+  lightboxCloseBtn.addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && lightboxOpen) closeLightbox();
+  });
+
   function tick(){
     var now = performance.now();
-    if (!dragging && zoomLevel <= ZOOM_INTERACT_THRESHOLD && now - lastInteraction > 1500){
+    if (!lightboxOpen && !dragging && zoomLevel <= ZOOM_INTERACT_THRESHOLD && now - lastInteraction > 1500){
       rotation[0] += 0.05;
       render();
     }

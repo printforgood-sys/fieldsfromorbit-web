@@ -518,4 +518,46 @@
       }
     });
   });
+
+  // --- "Send as a postcard": reveals a tiny form, builds a mailto: link on
+  // submit, and hands off to the visitor's own email app. No backend, no
+  // email API to run/pay for — see the share-ideas discussion, 2026-08-12.
+  document.querySelectorAll(".postcard-toggle").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var form = btn.nextElementSibling;
+      if (!form) return;
+      var expanded = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!expanded));
+      form.hidden = expanded;
+      if (!expanded) {
+        var emailField = form.querySelector(".postcard-email");
+        if (emailField) emailField.focus();
+      }
+    });
+  });
+
+  document.querySelectorAll(".postcard-form").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var emailField = form.querySelector(".postcard-email");
+      var email = emailField ? emailField.value.trim() : "";
+      if (!email) {
+        if (emailField) emailField.focus();
+        return;
+      }
+      var noteField = form.querySelector(".postcard-note");
+      var note = noteField ? noteField.value.trim() : "";
+      var title = form.getAttribute("data-title") || "this piece";
+      var url = form.getAttribute("data-url") || "";
+      var subject = "A satellite print you'd love: " + title;
+      var lines = [];
+      if (note) { lines.push(note, ""); }
+      lines.push("Thought you'd like this one from Fields From Orbit — " + title + ":");
+      lines.push(url);
+      var mailto = "mailto:" + encodeURIComponent(email) +
+        "?subject=" + encodeURIComponent(subject) +
+        "&body=" + encodeURIComponent(lines.join("\n"));
+      window.location.href = mailto;
+    });
+  });
 })();

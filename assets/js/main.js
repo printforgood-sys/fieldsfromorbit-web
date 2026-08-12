@@ -13,6 +13,9 @@
   // --- Real cross-visitor like counts (Cloudflare Worker + KV) ---
   var LIKES_API = "https://ffo-likes-api.printforgood.workers.dev";
 
+  // --- "Send as a postcard" (Cloudflare Worker + Resend + D1) ---
+  var POSTCARD_API = "https://ffo-postcard-api.printforgood.workers.dev/send";
+
   // --- Mobile nav toggle ---
   var toggle = document.getElementById("nav-toggle");
   var nav = document.getElementById("site-nav");
@@ -519,9 +522,9 @@
     });
   });
 
-  // --- "Send as a postcard": reveals a tiny form, builds a mailto: link on
-  // submit, and hands off to the visitor's own email app. No backend, no
-  // email API to run/pay for — see the share-ideas discussion, 2026-08-12.
+  // --- "Send as a postcard": reveals a tiny form, POSTs to the Worker,
+  // which sends a real HTML email via Resend (poster image embedded) and
+  // logs the send + optional Mailchimp opt-in. See ffo-postcard-worker.js.
   document.querySelectorAll(".postcard-toggle").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var form = btn.nextElementSibling;
@@ -530,34 +533,72 @@
       btn.setAttribute("aria-expanded", String(!expanded));
       form.hidden = expanded;
       if (!expanded) {
-        var emailField = form.querySelector(".postcard-email");
-        if (emailField) emailField.focus();
+        var nameField = form.querySelector(".postcard-sender-name");
+        if (nameField) nameField.focus();
       }
     });
   });
 
   document.querySelectorAll(".postcard-form").forEach(function (form) {
+    var statusEl = form.querySelector(".postcard-status");
+    var sendBtn = form.querySelector(".postcard-send");
+
+    function setStatus(text, kind) {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      statusEl.hidden = !text;
+      statusEl.className = "postcard-status" + (kind ? " is-" + kind : "");
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      var emailField = form.querySelector(".postcard-email");
-      var email = emailField ? emailField.value.trim() : "";
-      if (!email) {
-        if (emailField) emailField.focus();
-        return;
-      }
+
+      var senderEmailField = form.querySelector(".postcard-sender-email");
+      var recipientEmailField = form.querySelector(".postcard-email");
+      var senderEmail = senderEmailField ? senderEmailField.value.trim() : "";
+      var recipientEmail = recipientEmailField ? recipientEmailField.value.trim() : "";
+      if (!senderEmail) { if (senderEmailField) senderEmailField.focus(); return; }
+      if (!recipientEmail) { if (recipientEmailField) recipientEmailField.focus(); return; }
+
+      var nameField = form.querySelector(".postcard-sender-name");
       var noteField = form.querySelector(".postcard-note");
-      var note = noteField ? noteField.value.trim() : "";
-      var title = form.getAttribute("data-title") || "this piece";
-      var url = form.getAttribute("data-url") || "";
-      var subject = "A satellite print you'd love: " + title;
-      var lines = [];
-      if (note) { lines.push(note, ""); }
-      lines.push("Thought you'd like this one from Fields From Orbit — " + title + ":");
-      lines.push(url);
-      var mailto = "mailto:" + encodeURIComponent(email) +
-        "?subject=" + encodeURIComponent(subject) +
-        "&body=" + encodeURIComponent(lines.join("\n"));
-      window.location.href = mailto;
+      var optinField = form.querySelector(".postcard-optin-check");
+      var honeypotField = form.querySelector(".postcard-website");
+
+      var payload = {
+        senderEmail: senderEmail,
+        senderName: nameField ? nameField.value.trim() : "",
+        senderOptin: optinField ? optinField.checked : false,
+        recipientEmail: recipientEmail,
+        note: noteField ? noteField.value.trim() : "",
+        ffoCode: form.getAttribute("data-code") || "",
+        pieceTitle: form.getAttribute("data-title") || "",
+        place: form.getAttribute("data-place") || "",
+        pieceUrl: form.getAttribute("data-url") || "",
+        website: honeypotField ? honeypotField.value : "",
+      };
+
+      if (sendBtn) sendBtn.disabled = true;
+      setStatus("Sending…", "");
+
+      fetch(POSTCARD_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).then(function (res) {
+        return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      }).then(function (result) {
+        if (sendBtn) sendBtn.disabled = false;
+        if (result.ok) {
+          setStatus("Sent! " + payload.recipientEmail + " should see it shortly.", "success");
+          form.reset();
+        } else {
+          setStatus((result.data && result.data.error) || "Couldn't send that — try again.", "error");
+        }
+      }).catch(function () {
+        if (sendBtn) sendBtn.disabled = false;
+        setStatus("Couldn't reach the server — check your connection and try again.", "error");
+      });
     });
   });
 })();

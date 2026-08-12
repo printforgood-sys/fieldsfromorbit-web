@@ -98,6 +98,25 @@
             <p class="globe-preview-place" id="globe-preview-place"></p>
             <p class="globe-preview-blurb" id="globe-preview-blurb"></p>
             <p class="globe-preview-info" id="globe-preview-info"></p>
+            <div class="postcard-row">
+      <button class="postcard-toggle" type="button" aria-expanded="false">Send this as a postcard</button>
+      <form class="postcard-form" id="globe-preview-postcard-form" hidden
+            data-title="" data-url="" data-place="" data-code="">
+        <label for="globe-preview-postcard-sender-name">Your name</label>
+        <input class="postcard-sender-name" type="text" id="globe-preview-postcard-sender-name" placeholder="Your name">
+        <label for="globe-preview-postcard-sender-email">Your email</label>
+        <input class="postcard-sender-email" type="email" id="globe-preview-postcard-sender-email" required placeholder="you@example.com">
+        <label class="postcard-optin"><input class="postcard-optin-check" type="checkbox">Keep me updated with new drops too</label>
+        <label for="globe-preview-postcard-email">Friend&rsquo;s email</label>
+        <input class="postcard-email" type="email" id="globe-preview-postcard-email" required placeholder="friend@example.com">
+        <label for="globe-preview-postcard-note">Add a note (optional)</label>
+        <textarea class="postcard-note" id="globe-preview-postcard-note" rows="2" placeholder="Thought you'd love this one..."></textarea>
+        <input class="postcard-website" type="text" name="website" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;">
+        <button type="submit" class="buy-btn postcard-send">Send Postcard</button>
+        <p class="postcard-status" hidden></p>
+        <p class="postcard-hint">Sent from Fields From Orbit on your behalf.</p>
+      </form>
+    </div>
             <div class="buy-list globe-preview-buylist">
               <a class="buy-line" id="globe-preview-buy-link" href="#" target="_blank" rel="noopener" hidden>
                 <span>Buy Digital Download</span><span class="buy-price">$15</span>
@@ -132,6 +151,25 @@
         <p class="globe-lightbox-place" id="globe-lightbox-place"></p>
         <p class="globe-lightbox-blurb" id="globe-lightbox-blurb"></p>
         <p class="globe-lightbox-info" id="globe-lightbox-info"></p>
+        <div class="postcard-row">
+      <button class="postcard-toggle" type="button" aria-expanded="false">Send this as a postcard</button>
+      <form class="postcard-form" id="globe-lightbox-postcard-form" hidden
+            data-title="" data-url="" data-place="" data-code="">
+        <label for="globe-lightbox-postcard-sender-name">Your name</label>
+        <input class="postcard-sender-name" type="text" id="globe-lightbox-postcard-sender-name" placeholder="Your name">
+        <label for="globe-lightbox-postcard-sender-email">Your email</label>
+        <input class="postcard-sender-email" type="email" id="globe-lightbox-postcard-sender-email" required placeholder="you@example.com">
+        <label class="postcard-optin"><input class="postcard-optin-check" type="checkbox">Keep me updated with new drops too</label>
+        <label for="globe-lightbox-postcard-email">Friend&rsquo;s email</label>
+        <input class="postcard-email" type="email" id="globe-lightbox-postcard-email" required placeholder="friend@example.com">
+        <label for="globe-lightbox-postcard-note">Add a note (optional)</label>
+        <textarea class="postcard-note" id="globe-lightbox-postcard-note" rows="2" placeholder="Thought you'd love this one..."></textarea>
+        <input class="postcard-website" type="text" name="website" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;">
+        <button type="submit" class="buy-btn postcard-send">Send Postcard</button>
+        <p class="postcard-status" hidden></p>
+        <p class="postcard-hint">Sent from Fields From Orbit on your behalf.</p>
+      </form>
+    </div>
         <div class="buy-list globe-lightbox-buylist">
           <a class="buy-line" id="globe-lightbox-buy-link" href="#" target="_blank" rel="noopener" hidden>
             <span>Buy Digital Download</span><span class="buy-price">$15</span>
@@ -177,6 +215,7 @@
   var buyLinkEl = document.getElementById('globe-preview-buy-link');
   var buyWaitlistEl = document.getElementById('globe-preview-buy-waitlist');
   var canvasWaitlistEl = document.getElementById('globe-preview-canvas-waitlist');
+  var postcardFormEl = document.getElementById('globe-preview-postcard-form');
 
   // Lightbox refs, added 2026-08-09 so clicking a pin opens the piece
   // near-full-screen (see [[project_ffo_homepage_globe_nav]] discussion) --
@@ -197,6 +236,7 @@
   var lbBuyLinkEl = document.getElementById('globe-lightbox-buy-link');
   var lbBuyWaitlistEl = document.getElementById('globe-lightbox-buy-waitlist');
   var lbCanvasWaitlistEl = document.getElementById('globe-lightbox-canvas-waitlist');
+  var lbPostcardFormEl = document.getElementById('globe-lightbox-postcard-form');
   var lightboxOpen = false;
 
   var PREFIX = '';
@@ -384,6 +424,10 @@
     blurbEl.textContent = img.blurb;
     infoEl.textContent = img.coords + ' · ' + img.capture_date + ' · ' + img.collection_name;
     ctaEl.href = PREFIX + img.url;
+    postcardFormEl.setAttribute('data-title', img.title);
+    postcardFormEl.setAttribute('data-url', 'https://fieldsfromorbit.com/' + img.url.replace('index.html', ''));
+    postcardFormEl.setAttribute('data-place', img.place);
+    postcardFormEl.setAttribute('data-code', img.ffo_code);
 
     // Status-aware buy CTA, added 2026-08-04: real "Buy Digital Download"
     // link for pieces with a live digital_url, "Join the Waitlist" button
@@ -447,6 +491,10 @@
     lbBlurbEl.textContent = img.blurb;
     lbInfoEl.textContent = img.coords + ' · ' + img.capture_date + ' · ' + img.collection_name;
     lbCtaEl.href = PREFIX + img.url;
+    lbPostcardFormEl.setAttribute('data-title', img.title);
+    lbPostcardFormEl.setAttribute('data-url', 'https://fieldsfromorbit.com/' + img.url.replace('index.html', ''));
+    lbPostcardFormEl.setAttribute('data-place', img.place);
+    lbPostcardFormEl.setAttribute('data-code', img.ffo_code);
 
     if (img.digital_url){
       lbBuyLinkEl.hidden = false; lbBuyLinkEl.href = img.digital_url;

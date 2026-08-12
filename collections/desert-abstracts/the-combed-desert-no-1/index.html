@@ -98,13 +98,21 @@
 
     <div class="postcard-row">
       <button class="postcard-toggle" type="button" aria-expanded="false">Send this as a postcard</button>
-      <form class="postcard-form" hidden data-title="The Combed Desert No. 1" data-url="https://fieldsfromorbit.com/collections/desert-abstracts/the-combed-desert-no-1/">
-        <label for="postcard-email-FFO-BW-001">Friend&rsquo;s email</label>
-        <input class="postcard-email" type="email" id="postcard-email-FFO-BW-001" required placeholder="friend@example.com">
-        <label for="postcard-note-FFO-BW-001">Add a note (optional)</label>
-        <textarea class="postcard-note" id="postcard-note-FFO-BW-001" rows="2" placeholder="Thought you'd love this one..."></textarea>
+      <form class="postcard-form" id="piece-FFO-BW-001-postcard-form" hidden
+            data-title="The Combed Desert No. 1" data-url="https://fieldsfromorbit.com/collections/desert-abstracts/the-combed-desert-no-1/" data-place="Kalahari Desert, Botswana" data-code="FFO-BW-001">
+        <label for="piece-FFO-BW-001-postcard-sender-name">Your name</label>
+        <input class="postcard-sender-name" type="text" id="piece-FFO-BW-001-postcard-sender-name" placeholder="Your name">
+        <label for="piece-FFO-BW-001-postcard-sender-email">Your email</label>
+        <input class="postcard-sender-email" type="email" id="piece-FFO-BW-001-postcard-sender-email" required placeholder="you@example.com">
+        <label class="postcard-optin"><input class="postcard-optin-check" type="checkbox">Keep me updated with new drops too</label>
+        <label for="piece-FFO-BW-001-postcard-email">Friend&rsquo;s email</label>
+        <input class="postcard-email" type="email" id="piece-FFO-BW-001-postcard-email" required placeholder="friend@example.com">
+        <label for="piece-FFO-BW-001-postcard-note">Add a note (optional)</label>
+        <textarea class="postcard-note" id="piece-FFO-BW-001-postcard-note" rows="2" placeholder="Thought you'd love this one..."></textarea>
+        <input class="postcard-website" type="text" name="website" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;">
         <button type="submit" class="buy-btn postcard-send">Send Postcard</button>
-        <p class="postcard-hint">Opens in your own email app — nothing is sent from our servers.</p>
+        <p class="postcard-status" hidden></p>
+        <p class="postcard-hint">Sent from Fields From Orbit on your behalf.</p>
       </form>
     </div>
 

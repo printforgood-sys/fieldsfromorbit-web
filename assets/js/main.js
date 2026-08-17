@@ -519,37 +519,46 @@
   });
 
   // --- Stripe-backed digital-download checkout (pilot, 2026-08-17) ---
-  // Only pieces in build_site.py's STRIPE_CHECKOUT_PIECES render this button
+  // Only pieces in build_site.py's STRIPE_CHECKOUT_PIECES trigger this
   // (currently just FFO-CA-018). POSTs the piece code to the ffo-checkout
   // Worker, which creates a Stripe Checkout Session and returns its URL —
   // Stripe's own hosted page collects the buyer's email and card, we never
   // touch either. On success the browser is redirected straight there.
+  // Exposed on window (not just bound to .stripe-checkout-btn below) because
+  // the homepage globe's preview card and lightbox are built from a separate
+  // inline <script> in build_site.py and need to trigger the exact same flow
+  // from their own buy-link element — see showImage()/populateLightboxImage().
+  function startStripeCheckout(code, btn) {
+    if (!code || !btn) return;
+    var originalHTML = btn.innerHTML;
+    var wasDisabled = btn.disabled;
+    btn.disabled = true;
+    btn.innerHTML = "<span>Loading checkout&hellip;</span>";
+    fetch(CHECKOUT_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: code }),
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data && data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error("no checkout url returned: " + JSON.stringify(data));
+        }
+      })
+      .catch(function (err) {
+        console.error("Checkout failed:", err);
+        btn.disabled = wasDisabled;
+        btn.innerHTML = originalHTML;
+        alert("Sorry — checkout couldn't start. Please try again in a moment, or email us if it keeps happening.");
+      });
+  }
+  window.startStripeCheckout = startStripeCheckout;
+
   document.querySelectorAll(".stripe-checkout-btn").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      var code = btn.getAttribute("data-code");
-      if (!code) return;
-      var originalHTML = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = "<span>Loading checkout&hellip;</span>";
-      fetch(CHECKOUT_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: code }),
-      })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (data && data.url) {
-            window.location.href = data.url;
-          } else {
-            throw new Error("no checkout url returned: " + JSON.stringify(data));
-          }
-        })
-        .catch(function (err) {
-          console.error("Checkout failed:", err);
-          btn.disabled = false;
-          btn.innerHTML = originalHTML;
-          alert("Sorry — checkout couldn't start. Please try again in a moment, or email us if it keeps happening.");
-        });
+      startStripeCheckout(btn.getAttribute("data-code"), btn);
     });
   });
 

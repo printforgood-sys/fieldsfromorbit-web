@@ -710,6 +710,16 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
 .page-head h1 { font-size: 30px; margin: 0 0 8px 0; }
 .note { color: var(--faint); font-style: italic; font-size: 14px; }
 .prose h2 { font-size: 19px; margin-top: 28px; }
+.spec-table { width: 100%; border-collapse: collapse; margin: 18px 0; }
+.spec-table tr { border-bottom: 1px solid var(--rule); }
+.spec-table tr:first-child { border-top: 1px solid var(--rule); }
+.spec-table th, .spec-table td { padding: 10px 4px; text-align: left; font-weight: 400; vertical-align: top; }
+.spec-table th {
+  font-family: 'DejaVu Sans Mono', monospace;
+  font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--faint); width: 42%;
+}
+.spec-table td { color: var(--ink); font-size: 15px; }
 .faq-list details { border-bottom: 1px solid var(--rule); padding: 14px 0; }
 .faq-list summary { cursor: pointer; font-weight: 600; }
 .faq-list p { color: var(--faint); margin-top: 10px; }

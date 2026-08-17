@@ -537,7 +537,11 @@
     fetch(CHECKOUT_API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: code }),
+      // returnUrl lets the Worker send a cancelled checkout back to whatever
+      // page the buyer was actually on (piece page, homepage globe, etc.)
+      // instead of a fixed fallback -- Worker validates this is same-origin
+      // before using it.
+      body: JSON.stringify({ code: code, returnUrl: window.location.href }),
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {

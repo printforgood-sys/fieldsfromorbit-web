@@ -886,6 +886,12 @@ html.lightbox-open body { overflow: hidden; height: 100%; }
 .globe-preview-empty { padding: 20px; }
 .globe-preview-empty p { color: var(--faint); font-size: 14px; margin: 0; }
 .globe-preview-body[hidden], .globe-preview-empty[hidden] { display: none; }
+/* Crossfade for the auto-rotating default preview (see startPreviewRotation()
+   in build_site.py's globe script, added 2026-08-24) -- swaps to a new pin
+   every few seconds, weighted toward newer captures, and this softens the
+   swap into a brief fade instead of a hard cut. */
+.globe-preview-body { transition: opacity 0.35s ease; }
+.globe-preview-body.globe-preview-fading { opacity: 0; }
 .globe-preview-picker { padding: 16px 20px 0 20px; }
 .globe-preview-picker[hidden] { display: none; }
 /* .buy-line sets its own display:flex, which otherwise overrides the

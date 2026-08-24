@@ -410,6 +410,8 @@
       if (d < 16*dpr && d < hitDist){ hit = vp; hitDist = d; }
     });
     if (!hit) return;
+    stopPreviewRotation();
+    currentPreviewLoc = hit.loc;
     showLocation(hit.loc);
     openLightbox(hit.loc);
   }
@@ -480,6 +482,7 @@
         btn.addEventListener('click', function(){
           Array.from(pickerEl.querySelectorAll('.globe-preview-picker-btn')).forEach(function(b){ b.classList.remove('active'); });
           btn.classList.add('active');
+          stopPreviewRotation();
           showImage(img);
         });
         pickerEl.appendChild(btn);
@@ -584,17 +587,92 @@
     requestAnimationFrame(tick);
   }
 
+  // Auto-rotating default preview, added 2026-08-24: rather than always
+  // showing the same seed piece, the sidebar card advances to a new pin
+  // every PREVIEW_ROTATE_MS while nobody's touched the globe -- weighted so
+  // recently-captured pieces (by capture_date) come up several times more
+  // often than the oldest ones, without ever fully excluding them. Stops
+  // for good the moment someone clicks a pin or a picker button themselves
+  // (see stopPreviewRotation() calls below) -- once a visitor has made
+  // their own choice, the image shouldn't change out from under them.
+  var PREVIEW_ROTATE_MS = 7000;
+  var previewRotateTimer = null;
+  var previewRotationStopped = false;
+  var currentPreviewLoc = null;
+
+  function locationNewestDate(loc){
+    var newest = null;
+    loc.images.forEach(function(img){
+      if (!newest || img.capture_date > newest) newest = img.capture_date;
+    });
+    return newest || '';
+  }
+
+  // Newest-first order, then a simple linear weight (newest pin = N,
+  // oldest = 1) so recent work is picked several times more often than the
+  // earliest pieces, but everything stays in the rotation.
+  var rotationOrder = LOCATIONS.slice().sort(function(a, b){
+    var da = locationNewestDate(a), db = locationNewestDate(b);
+    return da < db ? 1 : (da > db ? -1 : 0);
+  });
+  var rotationWeights = rotationOrder.map(function(loc, i){ return rotationOrder.length - i; });
+  var rotationTotalWeight = rotationWeights.reduce(function(a, b){ return a + b; }, 0);
+
+  function pickWeightedLocation(excludeLoc){
+    if (!rotationOrder.length) return null;
+    var chosen = rotationOrder[0];
+    for (var attempt = 0; attempt < 6; attempt++){
+      var r = Math.random() * rotationTotalWeight, acc = 0;
+      for (var i = 0; i < rotationOrder.length; i++){
+        acc += rotationWeights[i];
+        if (r <= acc){ chosen = rotationOrder[i]; break; }
+      }
+      if (!excludeLoc || chosen !== excludeLoc || rotationOrder.length === 1) return chosen;
+    }
+    return chosen;
+  }
+
+  function showLocationWithFade(loc){
+    previewBody.classList.add('globe-preview-fading');
+    setTimeout(function(){
+      showLocation(loc);
+      previewBody.classList.remove('globe-preview-fading');
+    }, 220);
+  }
+
+  function startPreviewRotation(){
+    if (previewRotationStopped || rotationOrder.length < 2) return;
+    clearInterval(previewRotateTimer);
+    previewRotateTimer = setInterval(function(){
+      if (previewRotationStopped || lightboxOpen || document.hidden) return;
+      var next = pickWeightedLocation(currentPreviewLoc);
+      if (!next) return;
+      currentPreviewLoc = next;
+      showLocationWithFade(next);
+    }, PREVIEW_ROTATE_MS);
+  }
+
+  function stopPreviewRotation(){
+    previewRotationStopped = true;
+    clearInterval(previewRotateTimer);
+  }
+
   // Seed the preview panel with a real piece on load (this is the hero now,
   // not a secondary section -- it should never show as a blank prompt).
-  var seedLoc = null;
-  for (var i = 0; i < LOCATIONS.length; i++){
-    for (var j = 0; j < LOCATIONS[i].images.length; j++){
-      if (LOCATIONS[i].images[j].title === SEED_TITLE){ seedLoc = LOCATIONS[i]; break; }
-    }
-    if (seedLoc) break;
-  }
+  // Picked with the same newer-weighted randomness as the rotation itself
+  // (2026-08-24: Paulo didn't want the very first paint to always be the
+  // same fixed piece -- it should already skew toward newer work, not just
+  // the rotation that kicks in afterward) rather than a single hardcoded
+  // SEED_TITLE. SEED_TITLE/HOME_ROTATION (above) are unaffected -- they
+  // still just aim the globe's default camera angle, independent of which
+  // piece the preview card happens to open on.
+  var seedLoc = pickWeightedLocation(null);
   if (!seedLoc && LOCATIONS.length) seedLoc = LOCATIONS[0];
-  if (seedLoc) showLocation(seedLoc);
+  if (seedLoc){
+    currentPreviewLoc = seedLoc;
+    showLocation(seedLoc);
+    startPreviewRotation();
+  }
 
   resize();
   requestAnimationFrame(tick);

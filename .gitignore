@@ -1,0 +1,2 @@
+# Local cleanup staging -- never belongs in the deployed site repo.
+_to_delete/

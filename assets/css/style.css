@@ -1014,6 +1014,32 @@ html.lightbox-open body { overflow: hidden; height: 100%; }
 }
 .globe-lightbox-cta:hover { color: var(--accent); border-color: var(--accent); }
 
+/* "Digital Download Details" confirm page (added 2026-08-26, see
+   [[project_ffo_checkout_confirm_page]]) -- sits between "Buy Digital
+   Download" and Stripe checkout for every STRIPE_CHECKOUT_PIECES piece,
+   reached from both the homepage globe (lightbox + preview card) and the
+   piece page's own buy button -- one unified flow, not two, per Paul's
+   call. Reuses .page-head.narrow / .prose / .spec-table / .buy-btn /
+   .checkout-trust from elsewhere on the site; these are just the pieces
+   specific to this page's own layout. */
+.confirm-poster { text-align: center; margin: 0 0 18px 0; }
+.confirm-poster img {
+  max-width: 340px; width: 100%; height: auto; margin: 0 auto;
+  border: 1px solid var(--rule); border-radius: 4px;
+}
+.price-line {
+  font-family: 'DejaVu Sans Mono', monospace; font-size: 13px; color: var(--ink);
+  background: var(--paper-soft); display: inline-block; padding: 6px 12px; border-radius: 20px; margin: 0;
+}
+.price-line .amt { color: #fff; background: var(--accent); padding: 4px 10px; border-radius: 20px; margin-left: 6px; }
+.confirm-cta { text-align: center; margin: 18px 0 6px 0; }
+.confirm-cta-top { margin-top: 14px; }
+.confirm-cta .checkout-trust { justify-content: center; margin-top: 12px; }
+.confirm-rule { border: none; border-top: 1px solid var(--rule); margin: 30px 0 0 0; }
+.confirm-back { text-align: center; margin: 16px 0 0 0; font-size: 13px; color: var(--faint); }
+.confirm-back a { color: var(--faint); }
+.confirm-back a:hover { color: var(--accent-dark); }
+
 /* Mobile: stack image-over-sidebar instead of side-by-side, full screen,
    no rounded corners -- same reasoning as the fit-mode zoom overlay. */
 @media (max-width: 899px) {

@@ -452,15 +452,16 @@
     // main.js's own querySelectorAll('.waitlist-btn') once it loads, reads
     // these data-* attributes fresh on each click) for everything else.
     if (img.checkout_code){
-      // Site-owned Stripe checkout pilot -- same POST+redirect flow as the
-      // piece pages' .stripe-checkout-btn, via main.js's window.startStripeCheckout.
+      // Site-owned checkout pilot -- links to this piece's /buy/{code}/
+      // confirm page (build_buy_confirm()) rather than triggering Stripe
+      // directly, since 2026-08-26 (see [[project_ffo_checkout_confirm_page]]):
+      // the actual Stripe redirect now only happens from that page's own
+      // CTA, so a buyer clicking from the globe sees the same spec/delivery/
+      // trust info as one clicking from the piece page.
       buyLinkEl.hidden = false;
-      buyLinkEl.href = '#';
+      buyLinkEl.href = PREFIX + 'buy/' + img.checkout_code + '/';
+      buyLinkEl.onclick = null;
       buyLinkEl.querySelector('.buy-price').textContent = img.checkout_price_display;
-      buyLinkEl.onclick = function (e) {
-        e.preventDefault();
-        if (window.startStripeCheckout) window.startStripeCheckout(img.checkout_code, buyLinkEl);
-      };
       buyWaitlistEl.hidden = true;
     } else if (img.digital_url){
       buyLinkEl.hidden = false; buyLinkEl.href = img.digital_url; buyLinkEl.onclick = null;
@@ -527,13 +528,11 @@
     lbPostcardFormEl.setAttribute('data-code', img.ffo_code);
 
     if (img.checkout_code){
+      // See the matching comment in showImage() above.
       lbBuyLinkEl.hidden = false;
-      lbBuyLinkEl.href = '#';
+      lbBuyLinkEl.href = PREFIX + 'buy/' + img.checkout_code + '/';
+      lbBuyLinkEl.onclick = null;
       lbBuyLinkEl.querySelector('.buy-price').textContent = img.checkout_price_display;
-      lbBuyLinkEl.onclick = function (e) {
-        e.preventDefault();
-        if (window.startStripeCheckout) window.startStripeCheckout(img.checkout_code, lbBuyLinkEl);
-      };
       lbBuyWaitlistEl.hidden = true;
     } else if (img.digital_url){
       lbBuyLinkEl.hidden = false; lbBuyLinkEl.href = img.digital_url; lbBuyLinkEl.onclick = null;

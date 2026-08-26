@@ -277,6 +277,13 @@
   // overlay, and doesn't get confused with the green buy/link accent used
   // everywhere else on the site. Added 2026-08-26.
   var DOT_COLOR = '#D7263D';
+  // Tracks whatever image the SIDEBAR preview is currently showing,
+  // regardless of why (click, auto-rotation, or a settled hover) -- the
+  // hover handler below compares against this (not a separate "what did I
+  // last hover" variable) so it stays correct even when something else
+  // (the auto-rotate timer) changes the display out from under a
+  // stationary cursor. Set at the top of showImage(). Added 2026-08-26.
+  var currentDisplayImg = null;
 
   function resize(){
     dpr = window.devicePixelRatio || 1;
@@ -451,14 +458,22 @@
     render();
   });
 
-  function handleClick(e){
+  // Shared by handleClick and the hover handler below -- same fixed
+  // 16px (device-pixel) hit radius regardless of zoom, see the MAX_ZOOM
+  // comment above for why that's fixed rather than scaled.
+  function findHit(clientX, clientY){
     var rect = canvas.getBoundingClientRect();
-    var cx = (e.clientX-rect.left)*dpr, cy = (e.clientY-rect.top)*dpr;
+    var cx = (clientX-rect.left)*dpr, cy = (clientY-rect.top)*dpr;
     var hit = null, hitDist = Infinity;
     visiblePoints.forEach(function(vp){
       var d = Math.hypot(vp.x-cx, vp.y-cy);
       if (d < 16*dpr && d < hitDist){ hit = vp; hitDist = d; }
     });
+    return hit;
+  }
+
+  function handleClick(e){
+    var hit = findHit(e.clientX, e.clientY);
     if (!hit) return;
     stopPreviewRotation();
     currentPreviewLoc = hit.loc;
@@ -466,7 +481,57 @@
     openLightbox(hit.loc, hit.img);
   }
 
+  // Hover-to-preview, added 2026-08-26 per Paulo's request: on a real mouse
+  // (plain 'mousemove', not the pointer events used for drag/touch above,
+  // so this never fires on touch), resting the cursor on a dot updates the
+  // sidebar preview without opening the lightbox -- a lightweight way to
+  // browse. Decisions behind the specifics here, confirmed with Paulo:
+  // - Sticky: the preview holds whatever was last hovered (or clicked, or
+  //   auto-rotated to) until a NEW dot is hovered or one is clicked --
+  //   moving off every dot does nothing, so a visitor can move their mouse
+  //   from a dot to the sidebar's buy button without the preview reverting
+  //   out from under them first.
+  // - Hovering does NOT stop the auto-rotating slideshow (only a click
+  //   does) -- so the slideshow can still swap the preview a few seconds
+  //   after someone stops moving their mouse near the globe.
+  // - Hovering DOES pause the globe's own auto-spin (same as dragging),
+  //   via lastInteraction, so a dot doesn't drift out from under the
+  //   cursor mid-hover.
+  // - A short settle delay (HOVER_SETTLE_MS) avoids swapping the preview
+  //   (and firing a new image load) for every dot the cursor merely
+  //   passes over on the way somewhere else -- only once it's paused on
+  //   one. Comparing against currentDisplayImg (not a separate "last
+  //   hovered" variable) means this still fires correctly even if the
+  //   slideshow silently changed the display while the cursor sat still.
+  var HOVER_SETTLE_MS = 150;
+  var hoverSettleTimer = null;
+  var pendingHoverImg = null;
+
+  canvas.addEventListener('mousemove', function(e){
+    if (dragging || lightboxOpen) return;
+    var hit = findHit(e.clientX, e.clientY);
+    if (hit) lastInteraction = performance.now();
+    canvas.classList.toggle('hovering-dot', !!hit);
+
+    var targetImg = hit ? hit.img : null;
+    if (targetImg === currentDisplayImg || targetImg === pendingHoverImg) return;
+    clearTimeout(hoverSettleTimer);
+    pendingHoverImg = targetImg;
+    if (!hit) return; // moved off every dot -- sticky, leave the preview as-is
+    hoverSettleTimer = setTimeout(function(){
+      showLocation(hit.loc, hit.img);
+      pendingHoverImg = null;
+    }, HOVER_SETTLE_MS);
+  });
+
+  canvas.addEventListener('mouseleave', function(){
+    clearTimeout(hoverSettleTimer);
+    pendingHoverImg = null;
+    canvas.classList.remove('hovering-dot');
+  });
+
   function showImage(img){
+    currentDisplayImg = img;
     previewEmpty.hidden = true; previewBody.hidden = false;
     imgEl.src = PREFIX + img.thumb;
     imgEl.alt = img.title + ' — satellite art print of ' + img.place;

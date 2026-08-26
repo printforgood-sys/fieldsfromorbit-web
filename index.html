@@ -271,6 +271,12 @@
   var rotation = HOME_ROTATION.slice();
   var lastInteraction = 0;
   var visiblePoints = [];
+  // High-contrast red, replacing the old site-accent green (#4C6B2D) --
+  // Paulo asked for a dot colour that reads clearly against the cream/paper
+  // background, the dark coastline strokes, and the blue Great Lakes
+  // overlay, and doesn't get confused with the green buy/link accent used
+  // everywhere else on the site. Added 2026-08-26.
+  var DOT_COLOR = '#D7263D';
 
   function resize(){
     dpr = window.devicePixelRatio || 1;
@@ -306,17 +312,46 @@
       if (centerDist > Math.PI/2) return;
       var p = projection(coord);
       if (!p) return;
-      visiblePoints.push({loc: loc, x: p[0], y: p[1]});
-      var multi = loc.images.length > 1;
-      ctx.beginPath();
-      ctx.arc(p[0], p[1], (multi?5.5:4)*dpr, 0, Math.PI*2);
-      ctx.fillStyle = '#4C6B2D';
-      ctx.fill();
-      if (multi){
+      var n = loc.images.length;
+      if (n === 1){
+        // Single image at this location -- one plain dot, hit-tests
+        // straight to that image.
+        visiblePoints.push({loc: loc, img: loc.images[0], x: p[0], y: p[1]});
         ctx.beginPath();
-        ctx.arc(p[0], p[1], 9*dpr, 0, Math.PI*2);
-        ctx.lineWidth = 1*dpr; ctx.strokeStyle = '#4C6B2D'; ctx.stroke();
+        ctx.arc(p[0], p[1], 4*dpr, 0, Math.PI*2);
+        ctx.fillStyle = DOT_COLOR;
+        ctx.fill();
+        return;
       }
+      // Multiple images at (nearly) the same real-world spot -- rather than
+      // one dot with a thin ring around it (the old treatment, which read
+      // as "slightly bigger dot" more than "multiple images here"), fan the
+      // location out into one short leg per image, radiating from a small
+      // hub dot. The leg COUNT is the image count, visible at a glance
+      // without clicking. Added 2026-08-26 per Paulo's request. Each leg's
+      // end-dot hit-tests directly to that one image; the hub itself
+      // hit-tests to the first image (same as clicking used to do on the
+      // old single dot).
+      var legLen = (11 + Math.min(n, 5) * 2) * dpr;
+      for (var i = 0; i < n; i++){
+        var angle = -Math.PI/2 + i * (2*Math.PI/n);
+        var lx = p[0] + legLen * Math.cos(angle);
+        var ly = p[1] + legLen * Math.sin(angle);
+        ctx.beginPath();
+        ctx.moveTo(p[0], p[1]);
+        ctx.lineTo(lx, ly);
+        ctx.lineWidth = 1*dpr; ctx.strokeStyle = DOT_COLOR; ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(lx, ly, 4*dpr, 0, Math.PI*2);
+        ctx.fillStyle = DOT_COLOR;
+        ctx.fill();
+        visiblePoints.push({loc: loc, img: loc.images[i], x: lx, y: ly});
+      }
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], 2.5*dpr, 0, Math.PI*2);
+      ctx.fillStyle = DOT_COLOR;
+      ctx.fill();
+      visiblePoints.push({loc: loc, img: loc.images[0], x: p[0], y: p[1]});
     });
   }
 
@@ -427,8 +462,8 @@
     if (!hit) return;
     stopPreviewRotation();
     currentPreviewLoc = hit.loc;
-    showLocation(hit.loc);
-    openLightbox(hit.loc);
+    showLocation(hit.loc, hit.img);
+    openLightbox(hit.loc, hit.img);
   }
 
   function showImage(img){
@@ -479,7 +514,7 @@
     canvasWaitlistEl.setAttribute('data-title', img.title);
   }
 
-  function showLocation(loc){
+  function showLocation(loc, initialImg){
     if (loc.images.length === 1){
       pickerEl.hidden = true; pickerEl.innerHTML = '';
       showImage(loc.images[0]);
@@ -490,10 +525,11 @@
       label.className = 'globe-preview-picker-label';
       label.textContent = loc.images.length + ' images at this location:';
       pickerEl.appendChild(label);
-      loc.images.forEach(function(img, i){
+      var activeImg = initialImg || loc.images[0];
+      loc.images.forEach(function(img){
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'globe-preview-picker-btn' + (i===0 ? ' active' : '');
+        btn.className = 'globe-preview-picker-btn' + (img === activeImg ? ' active' : '');
         btn.textContent = img.title;
         btn.addEventListener('click', function(){
           Array.from(pickerEl.querySelectorAll('.globe-preview-picker-btn')).forEach(function(b){ b.classList.remove('active'); });
@@ -503,7 +539,7 @@
         });
         pickerEl.appendChild(btn);
       });
-      showImage(loc.images[0]);
+      showImage(activeImg);
     }
   }
 
@@ -548,7 +584,7 @@
     lbCanvasWaitlistEl.setAttribute('data-title', img.title);
   }
 
-  function populateLightboxLocation(loc){
+  function populateLightboxLocation(loc, initialImg){
     if (loc.images.length === 1){
       lbPickerEl.hidden = true; lbPickerEl.innerHTML = '';
       populateLightboxImage(loc.images[0]);
@@ -559,10 +595,11 @@
       label.className = 'globe-preview-picker-label';
       label.textContent = loc.images.length + ' images at this location:';
       lbPickerEl.appendChild(label);
-      loc.images.forEach(function(img, i){
+      var activeImg = initialImg || loc.images[0];
+      loc.images.forEach(function(img){
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'globe-preview-picker-btn' + (i===0 ? ' active' : '');
+        btn.className = 'globe-preview-picker-btn' + (img === activeImg ? ' active' : '');
         btn.textContent = img.title;
         btn.addEventListener('click', function(){
           Array.from(lbPickerEl.querySelectorAll('.globe-preview-picker-btn')).forEach(function(b){ b.classList.remove('active'); });
@@ -571,12 +608,12 @@
         });
         lbPickerEl.appendChild(btn);
       });
-      populateLightboxImage(loc.images[0]);
+      populateLightboxImage(activeImg);
     }
   }
 
-  function openLightbox(loc){
-    populateLightboxLocation(loc);
+  function openLightbox(loc, initialImg){
+    populateLightboxLocation(loc, initialImg);
     lightboxOpen = true;
     lightboxEl.classList.add('open');
     document.documentElement.classList.add('lightbox-open');

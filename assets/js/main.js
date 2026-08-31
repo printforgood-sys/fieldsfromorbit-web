@@ -518,17 +518,22 @@
     });
   });
 
-  // --- Stripe-backed digital-download checkout (pilot, 2026-08-17) ---
-  // Only pieces in build_site.py's STRIPE_CHECKOUT_PIECES trigger this
-  // (currently just FFO-CA-018). POSTs the piece code to the ffo-checkout
-  // Worker, which creates a Stripe Checkout Session and returns its URL —
-  // Stripe's own hosted page collects the buyer's email and card, we never
-  // touch either. On success the browser is redirected straight there.
+  // --- Stripe-backed checkout: digital download (pilot, 2026-08-17) AND
+  // canvas print (added 2026-08-31, LIVE as of 2026-08-31 -- ffo-checkout
+  // Worker's canvas support is deployed, GOOTEN_TEST_MODE is off, and
+  // CANVAS_CHECKOUT_PIECES below is populated). POSTs the piece code + product
+  // type to the ffo-checkout Worker, which creates a Stripe Checkout Session
+  // and returns its URL — Stripe's own hosted page collects the buyer's
+  // email/card (and shipping address + phone, for canvas), we never touch
+  // any of it. On success the browser is redirected straight there.
   // Exposed on window (not just bound to .stripe-checkout-btn below) because
   // the homepage globe's preview card and lightbox are built from a separate
   // inline <script> in build_site.py and need to trigger the exact same flow
   // from their own buy-link element — see showImage()/populateLightboxImage().
-  function startStripeCheckout(code, btn) {
+  // `type` is optional and defaults to "digital" so every existing caller
+  // (including that inline globe script, which doesn't pass a third arg)
+  // keeps working unchanged.
+  function startStripeCheckout(code, btn, type) {
     if (!code || !btn) return;
     var originalHTML = btn.innerHTML;
     var wasDisabled = btn.disabled;
@@ -541,7 +546,7 @@
       // page the buyer was actually on (piece page, homepage globe, etc.)
       // instead of a fixed fallback -- Worker validates this is same-origin
       // before using it.
-      body: JSON.stringify({ code: code, returnUrl: window.location.href }),
+      body: JSON.stringify({ code: code, type: type || "digital", returnUrl: window.location.href }),
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
@@ -562,7 +567,7 @@
 
   document.querySelectorAll(".stripe-checkout-btn").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      startStripeCheckout(btn.getAttribute("data-code"), btn);
+      startStripeCheckout(btn.getAttribute("data-code"), btn, btn.getAttribute("data-type"));
     });
   });
 

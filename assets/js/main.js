@@ -184,6 +184,15 @@
         openOverlay(mainImage.getAttribute("data-art"), mainImage.alt + " (artwork only, no label)", true);
       });
     }
+    // "View on a wall" toggle (added 2026-09-11) — only present on pieces
+    // with a rendered wall-mockup.jpg (see make_wall_mockup.py). Same
+    // fit-to-screen overlay pattern as the satellite-image-only toggle.
+    var wallToggle = document.querySelector(".wall-toggle");
+    if (wallToggle) {
+      wallToggle.addEventListener("click", function () {
+        openOverlay(mainImage.getAttribute("data-wall"), mainImage.alt + " (shown on a wall)", true);
+      });
+    }
     overlay.addEventListener("click", closeOverlay);
   }
 

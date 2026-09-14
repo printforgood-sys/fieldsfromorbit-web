@@ -636,6 +636,38 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px 20px; }
 .waitlist-btn:hover .buy-price { background: var(--ink); opacity: 0.85; }
 .fulfillment-note { font-size: 11px; color: var(--faint); margin: 10px 0; }
 .fulfillment-note a { color: var(--faint); }
+
+/* Free-with-signup digital gift (added 2026-09-14) -- a .buy-line-styled
+   header row (no link/click target of its own) followed by a compact
+   inline signup form, then a hidden "thanks, here's your download" block
+   that main.js reveals on submit. See FREE_WITH_SIGNUP_PIECES in
+   build_site.py. */
+.free-gift-line { cursor: default; }
+.free-gift-line:hover { background: none; }
+.buy-price-free {
+  background: none;
+  color: var(--faint);
+  padding: 0;
+  border-radius: 0;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.free-gift-form { margin: 2px 0 14px 0; }
+.free-gift-form .signup-row { justify-content: flex-start; gap: 6px; }
+.free-gift-form input[type=email] { flex: 1 1 180px; max-width: none; font-size: 13px; padding: 8px 10px; }
+.free-gift-form button { font-size: 11.5px; padding: 8px 14px; }
+.free-gift-consent { font-size: 11.5px; color: var(--faint); margin: 2px 0 10px 0; line-height: 1.4; }
+.free-gift-consent a { color: var(--faint); }
+.free-gift-thanks {
+  font-size: 13px; margin: 2px 0 14px 0; padding: 10px 12px;
+  background: var(--paper-soft); border: 1px solid var(--rule); border-radius: 4px;
+}
+.free-gift-thanks p { margin: 0 0 8px 0; }
+.free-gift-thanks p:last-child { margin-bottom: 0; }
+.free-gift-thanks-msg { font-weight: 600; }
+.free-gift-image { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 4px; margin: 0 0 8px 0; }
+.free-gift-download-link { color: var(--accent-dark); font-weight: 600; }
+.free-gift-hint { font-size: 11.5px; color: var(--faint); }
 .checkout-trust {
   display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
   font-family: 'DejaVu Sans Mono', monospace;

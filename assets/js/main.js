@@ -590,6 +590,33 @@
     });
   });
 
+  // --- Free-with-signup digital gift (added 2026-09-14): a small subset of
+  // signup forms (currently just the Northern Pit No. 1 piece page, see
+  // FREE_WITH_SIGNUP_PIECES in build_site.py) offer a real download in
+  // exchange for joining, instead of relying on Mailchimp's own confirmation
+  // redirect (the free plan only supports one, global, already-used-by-
+  // /welcome/ redirect for the whole audience). The form still submits
+  // normally to Mailchimp in the background (target="_blank" keeps this tab
+  // in place) -- this just reveals the already-present "thanks, here's your
+  // download" block on THIS page immediately. Honor-system gate, same trust
+  // level as the existing /welcome/ page (the file URL isn't secret either
+  // way -- not worth building real server-side gating for this).
+  document.querySelectorAll(".free-gift-form").forEach(function (form) {
+    form.addEventListener("submit", function () {
+      var thanksId = form.getAttribute("data-thanks-id");
+      var thanksEl = thanksId ? document.getElementById(thanksId) : null;
+      form.hidden = true;
+      if (thanksEl) {
+        thanksEl.hidden = false;
+        // Lazy-load the full-resolution image only now (not on initial page
+        // load, since most visitors never reach this point) -- same
+        // data-src windowed-loading convention used by the hero carousel.
+        var img = thanksEl.querySelector(".free-gift-image");
+        if (img && img.dataset.src && !img.src) img.src = img.dataset.src;
+      }
+    });
+  });
+
   // --- "Send as a postcard": reveals a tiny form, POSTs to the Worker,
   // which sends a real HTML email via Resend (poster image embedded) and
   // logs the send + optional Mailchimp opt-in. See ffo-postcard-worker.js.

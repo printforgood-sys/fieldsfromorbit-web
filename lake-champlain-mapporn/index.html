@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lake Champlain, 1762 &amp; 2025 — Fields From Orbit</title>
+<meta name="description" content="A 1762 British military survey of Lake Champlain, compared with a real Sentinel-2 satellite pass of the same lake in October 2025.">
+<meta name="robots" content="noindex,follow">
+<link rel="canonical" href="https://fieldsfromorbit.com/lake-champlain-mapporn/">
+<meta property="og:title" content="Lake Champlain, 1762 &amp; 2025">
+<meta property="og:description" content="A 1762 British military survey of Lake Champlain, compared with a real Sentinel-2 satellite pass of the same lake in October 2025.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://fieldsfromorbit.com/lake-champlain-mapporn/">
+<meta property="og:image" content="https://fieldsfromorbit.com/lake-champlain-mapporn/satellite-2025.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://fieldsfromorbit.com/lake-champlain-mapporn/satellite-2025.jpg">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23F7F5F0%22/%3E%3Cpath%20d%3D%22M%2028%2C100%20C%2055%2C58%20145%2C58%20172%2C100%20C%20145%2C142%2055%2C142%2028%2C100%20Z%22%20fill%3D%22none%22%20stroke%3D%22%231E1C18%22%20stroke-width%3D%224%22/%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%2225%22%20fill%3D%22%231E1C18%22/%3E%3Ccircle%20cx%3D%22110%22%20cy%3D%2290%22%20r%3D%226%22%20fill%3D%22%23F7F5F0%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/css/style.css">
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "613f290f1ff24ae9a65d40fb5493d46a"}'></script>
+<script>
+(function(){
+  try {
+    fetch("https://ffo-geo-beacon.printforgood.workers.dev/log", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({path: location.pathname, referrer: document.referrer}),
+      keepalive: true
+    });
+  } catch (e) {}
+})();
+</script>
+<style>
+  .compare-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:32px;
+    margin:0 0 8px 0;
+  }
+  .compare-grid figure{margin:0;}
+  .compare-grid img{
+    width:100%;
+    height:auto;
+    display:block;
+    border:1px solid var(--rule);
+  }
+  .compare-grid figcaption{margin-top:12px;}
+  .compare-grid figcaption .compare-year{
+    font-family:'DejaVu Sans Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    font-weight:700;
+    display:block;
+    margin-bottom:4px;
+  }
+  .compare-grid figcaption .compare-detail{
+    color:var(--ink);
+    font-size:14px;
+    display:block;
+  }
+  .compare-grid figcaption .compare-source{
+    font-family:'DejaVu Sans Mono', monospace;
+    color:var(--faint);
+    font-size:11px;
+    display:block;
+    margin-top:4px;
+  }
+  .lc-cta{
+    background:var(--paper-soft);
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    padding:40px 24px;
+    text-align:center;
+    margin:48px 0 0 0;
+  }
+  .lc-cta h3{margin:0 0 10px 0; font-size:1.3rem;}
+  .lc-cta p{color:var(--faint); max-width:480px; margin:0 auto 20px auto;}
+  @media (max-width:760px){
+    .compare-grid{grid-template-columns:1fr; gap:28px;}
+  }
+</style>
+</head>
+<body>
+<div id="cookie-banner" class="cookie-banner">
+  <p>This site uses a couple of cookies — one to remember you've liked a
+  piece, one to remember you've dismissed this banner. No tracking beyond
+  basic, anonymous site analytics. <a href="../privacy/index.html">Privacy policy</a></p>
+  <button id="cookie-accept">Got it</button>
+</div>
+<header class="site-header">
+  <a class="brand" href="../index.html" aria-label="Fields From Orbit">
+    <svg class="brand-logo" viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g transform="translate(64.9,-47.1) scale(0.95)">
+        <path d="M 28,100 C 55,58 145,58 172,100 C 145,142 55,142 28,100 Z" fill="none" stroke="currentColor" stroke-width="4"/>
+        <circle cx="100" cy="100" r="25" fill="currentColor"/>
+        <circle cx="110" cy="90" r="6" fill="var(--paper)"/>
+      </g>
+      <text x="160" y="125" text-anchor="middle" font-family="Arial, 'Helvetica Neue', Helvetica, sans-serif" font-weight="700" letter-spacing="1.5" font-size="30" fill="currentColor">Fields From Orbit</text>
+    </svg>
+  </a>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false">☰</button>
+  <nav class="site-nav" id="site-nav">
+      <a href="../index.html">Gallery</a>
+      <a href="../favourites/index.html">Fan Favourites</a>
+      <a href="../about/index.html">About</a>
+      <a href="../join/index.html">Join the List</a>
+      <a href="../newsletter/index.html">Newsletter</a>
+      <a href="../size-guide/index.html">Size Guide</a>
+      <a href="../faq/index.html">FAQ</a>
+      <a href="../contact/index.html">Contact</a>
+  </nav>
+</header>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="../index.html">Home</a> <span class="sep">›</span> <span>Lake Champlain, 1762 &amp; 2025</span></nav>
+<main>
+
+<section class="page-head narrow">
+  <h1>Lake Champlain</h1>
+  <p class="hero-sub">A British military survey, 1762 — and the same lake from orbit, 2025</p>
+</section>
+
+<div class="compare-grid">
+  <figure>
+    <img src="map-1762.jpg" alt="1762 hand-colored survey map of Lake Champlain by William Brasier">
+    <figcaption>
+      <span class="compare-year">1762</span>
+      <span class="compare-detail">William Brasier, surveyed by order of Maj.-Gen. Jeffery Amherst</span>
+      <span class="compare-source">Library of Congress, Geography and Map Division — public domain</span>
+    </figcaption>
+  </figure>
+  <figure>
+    <img src="satellite-2025.jpg" alt="Sentinel-2 satellite image of Lake Champlain captured October 2025">
+    <figcaption>
+      <span class="compare-year">2025</span>
+      <span class="compare-detail">44.538, -73.435 — Captured 11 October 2025</span>
+      <span class="compare-source">Sentinel-2 L2A True Color — Contains modified Copernicus Sentinel data 2025</span>
+    </figcaption>
+  </figure>
+</div>
+
+<section class="page-head narrow" style="margin-top:56px;">
+  <div class="prose">
+    <h2>The Lake They Couldn't Map Right — Until a War Made Them</h2>
+
+    <p>In 1762, a British Army draughtsman named William Brasier finished a map that no one had managed to get right in over a century of trying.</p>
+
+    <p>Lake Champlain — the long, narrow lake that runs along today's New York–Vermont border and reaches north into Quebec — had been drawn on European maps since the 1600s. Almost all of them got its shape and position wrong. Some 18th-century maps placed the lake far to the east of where it actually sits. For a body of water this important, that's a strange thing to have gotten wrong for so long.</p>
+
+    <p>Here's why it mattered: this lake, together with Lake George and the Richelieu River, formed the only real water highway connecting the Hudson River to the St. Lawrence — connecting the British colonies to New France. Armies, traders, and raiding parties had been moving up and down this corridor for a hundred years before anyone drew it accurately. It was dangerous enough, and fought over often enough, that people at the time just called it "the Great Warpath."</p>
+
+    <p>Brasier had actually started surveying the lake back in 1758, working under a military engineer named Dietrich Brehm, mapping the area around a fort the French called Carillon — the same fort the British would soon rename Ticonderoga. But the survey kept getting interrupted, because the region was an active battlefield in the French and Indian War. You can't finish a careful survey of a lake while armies are still fighting over its shoreline.</p>
+
+    <p>By 1762, the war in North America was effectively over. Major-General Jeffery Amherst, the British commander-in-chief, ordered Brasier to finally finish the job. The result was the first genuinely accurate map of Lake Champlain ever produced — every island, inlet, and shoreline feature drawn from real fieldwork instead of guesswork. It even marks lead mines and quarries along the shore, the kind of detail that only matters if you're thinking about the region in military terms.</p>
+
+    <p>The map didn't stay a historical curiosity for long. Fifteen years later, in 1777, British officers carried later printed versions of this exact survey with them during the campaign that led to their defeat at Saratoga — a battle historians often point to as the turning point of the American Revolution. A map drawn to help end one war ended up in the hands of the army fighting the next one.</p>
+
+    <p>What you're looking at above is that 1762 survey, next to a real satellite pass of the same lake taken in October 2025 — the same shoreline, the same islands, two hundred and sixty-three years apart.</p>
+
+    <p style="font-size:0.85rem; color:var(--faint); font-style:italic; margin-top:2em;">Historical map: "A Survey of Lake Champlain, from Crown Point to Windmill Point, and from thence to St. Johns," surveyed by order of Major-General Jeffery Amherst, drafted by William Brasier, 1762. Source: Library of Congress, Geography and Map Division — public domain.</p>
+  </div>
+</section>
+
+<section class="page-head narrow" style="margin-top:48px; text-align:center;">
+  <h2 style="font-size:1.3rem; margin-bottom:6px;">Want the full-resolution files?</h2>
+  <p style="color:var(--faint); max-width:460px; margin:0 auto 18px auto;">Both images above, full resolution, no watermark — join the list and they're yours immediately.</p>
+  <iframe name="lc-gift-frame-lake-champlain-mapporn" title="Newsletter signup (background)" aria-hidden="true" style="display:none;width:0;height:0;border:0;"></iframe>
+  <form class="signup-form free-gift-form" data-source="lake-champlain-mapporn-download" data-thanks-id="lc-gift-thanks-lake-champlain-mapporn" action="https://fieldsfromorbit.us18.list-manage.com/subscribe/post?u=690262a37721cb1bb52b9566c&amp;id=cdc4ff7f0b&amp;f_id=00f1b0e6f0" method="post" target="lc-gift-frame-lake-champlain-mapporn" style="max-width:420px; margin:0 auto;">
+    <label class="visually-hidden" for="lc-gift-email-lake-champlain-mapporn">Email address</label>
+    <div class="signup-row" style="justify-content:center;">
+      <input id="lc-gift-email-lake-champlain-mapporn" type="email" name="EMAIL" placeholder="you@example.com" required>
+      <input type="hidden" name="SOURCE_PAGE" value="lake-champlain-mapporn-download">
+      <div aria-hidden="true" style="position: absolute; left: -5000px;"><input type="text" name="b_690262a37721cb1bb52b9566c_cdc4ff7f0b" tabindex="-1" value=""></div>
+      <button type="submit">Get the files</button>
+    </div>
+  </form>
+  <p class="free-gift-consent" style="max-width:420px; margin:6px auto 0 auto;">By joining, you&rsquo;ll also get a new place from orbit roughly every two weeks &mdash; no spam, unsubscribe any time. See the <a href="../privacy/index.html">privacy policy</a>.</p>
+  <div class="free-gift-thanks" id="lc-gift-thanks-lake-champlain-mapporn" hidden style="max-width:420px; margin:14px auto 0 auto; text-align:left;">
+    <p class="free-gift-thanks-msg">Thanks &mdash; your downloads are ready.</p>
+    <p><a class="free-gift-download-link" href="map-1762.jpg" download="Fields-From-Orbit-Lake-Champlain-1762-Map.jpg">Download the 1762 survey map (full resolution)</a></p>
+    <p><a class="free-gift-download-link" href="satellite-2025.jpg" download="Fields-From-Orbit-Lake-Champlain-Satellite-2025.jpg">Download the 2025 satellite image (full resolution)</a></p>
+    <p class="free-gift-hint">Tip: you can also right-click either image above (press and hold on mobile) and choose &ldquo;Save Image As&hellip;&rdquo; to save it directly.</p>
+  </div>
+</section>
+
+<div class="lc-cta">
+  <h3>Real places, real orbital passes</h3>
+  <p>Fields From Orbit turns real Sentinel-2 satellite imagery into documented, dated fine art — every piece shows exactly where and when it was captured. <strong>Join the list and get a free digital download as a welcome gift</strong>, then a new place roughly every two weeks.</p>
+  <form class="signup-form large" data-source="lake-champlain-mapporn-cta" action="https://fieldsfromorbit.us18.list-manage.com/subscribe/post?u=690262a37721cb1bb52b9566c&amp;id=cdc4ff7f0b&amp;f_id=00f1b0e6f0" method="post" target="_blank">
+    <input type="email" name="EMAIL" placeholder="you@example.com" required aria-label="Email address">
+    <input type="hidden" name="SOURCE_PAGE" value="lake-champlain-mapporn-cta">
+    <div aria-hidden="true" style="position: absolute; left: -5000px;"><input type="text" name="b_690262a37721cb1bb52b9566c_cdc4ff7f0b" tabindex="-1" value=""></div>
+    <button type="submit" class="buy-btn">Join &rarr;</button>
+  </form>
+  <p style="margin-top:16px;"><a href="../index.html" style="font-size:0.85rem; color:var(--faint);">or browse the gallery &rarr;</a></p>
+</div>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-signup">
+    <p><strong>Get the next drop first — plus a free digital download when you join.</strong> New images roughly every two weeks, straight to your inbox — no spam, unsubscribe anytime.</p>
+    <form class="signup-form" data-source="lake-champlain-mapporn" action="https://fieldsfromorbit.us18.list-manage.com/subscribe/post?u=690262a37721cb1bb52b9566c&amp;id=cdc4ff7f0b&amp;f_id=00f1b0e6f0" method="post" target="_blank">
+      <input type="email" name="EMAIL" placeholder="you@example.com" required aria-label="Email address">
+      <input type="hidden" name="SOURCE_PAGE" value="lake-champlain-mapporn">
+      <div aria-hidden="true" style="position: absolute; left: -5000px;"><input type="text" name="b_690262a37721cb1bb52b9566c_cdc4ff7f0b" tabindex="-1" value=""></div>
+      <button type="submit">Join</button>
+    </form>
+  </div>
+  <p class="footer-links">
+    <a href="../privacy/index.html">Privacy</a> ·
+    <a href="../faq/index.html">FAQ</a> ·
+    <a href="../contact/index.html">Contact</a>
+  </p>
+  <p class="attribution">Contains modified Copernicus Sentinel data. &copy; Fields From Orbit.</p>
+</footer>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

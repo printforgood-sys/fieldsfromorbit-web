@@ -16,6 +16,9 @@
   // --- "Send as a postcard" (Cloudflare Worker + Resend + D1) ---
   var POSTCARD_API = "https://ffo-postcard-api.printforgood.workers.dev/send";
 
+  // --- Contact form (same Cloudflare Worker + Resend as the postcard feature) ---
+  var CONTACT_API = "https://ffo-postcard-api.printforgood.workers.dev/contact";
+
   // --- Site-owned digital-download checkout (Cloudflare Worker + Stripe) ---
   // Pilot started 2026-08-17, first step off Etsy. Only pieces listed in
   // build_site.py's STRIPE_CHECKOUT_PIECES render a .stripe-checkout-btn —
@@ -631,6 +634,67 @@
         var nameField = form.querySelector(".postcard-sender-name");
         if (nameField) nameField.focus();
       }
+    });
+  });
+
+  // --- Contact page form: POSTs to the Worker, which sends a real email
+  // via Resend straight to Paul, with reply-to set to the visitor's own
+  // address so replying just works. See ffo-postcard-worker.js (/contact).
+  document.querySelectorAll(".contact-form").forEach(function (form) {
+    var statusEl = form.querySelector(".contact-status");
+    var sendBtn = form.querySelector(".contact-send");
+
+    function setStatus(text, kind) {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      statusEl.hidden = !text;
+      statusEl.className = "contact-status" + (kind ? " is-" + kind : "");
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      var nameField = form.querySelector(".contact-name");
+      var emailField = form.querySelector(".contact-email");
+      var messageField = form.querySelector(".contact-message");
+      var honeypotField = form.querySelector(".contact-website");
+
+      var name = nameField ? nameField.value.trim() : "";
+      var email = emailField ? emailField.value.trim() : "";
+      var message = messageField ? messageField.value.trim() : "";
+
+      if (!name) { if (nameField) nameField.focus(); return; }
+      if (!email) { if (emailField) emailField.focus(); return; }
+      if (!message) { if (messageField) messageField.focus(); return; }
+
+      var payload = {
+        name: name,
+        email: email,
+        message: message,
+        website: honeypotField ? honeypotField.value : "",
+      };
+
+      if (sendBtn) sendBtn.disabled = true;
+      setStatus("Sending…", "");
+
+      fetch(CONTACT_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).then(function (res) {
+        return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      }).then(function (result) {
+        if (sendBtn) sendBtn.disabled = false;
+        if (result.ok) {
+          setStatus("Message sent — thanks! We'll get back to you soon.", "success");
+          form.reset();
+        } else {
+          setStatus((result.data && result.data.error) || "Couldn't send that — try again.", "error");
+        }
+      }).catch(function () {
+        if (sendBtn) sendBtn.disabled = false;
+        setStatus("Couldn't reach the server — check your connection and try again.", "error");
+      });
     });
   });
 

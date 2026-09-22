@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /welcome/
 Disallow: /meet/
-Sitemap: https://fieldsfromorbit.com/sitemap.xml
+Sitemap: https://www.fieldsfromorbit.com/sitemap.xml

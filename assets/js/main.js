@@ -25,6 +25,35 @@
   // everything else still uses a plain Etsy link or the waitlist button.
   var CHECKOUT_API = "https://ffo-checkout.printforgood.workers.dev/create-checkout-session";
 
+  // --- Checkout source attribution (2026-09-29) ---
+  // Persists the last real external referrer (or ?utm_source=) a visitor
+  // arrived from, in localStorage, so a purchase days later can still be
+  // traced back to what brought them here (Reddit, Google, etc.) instead of
+  // showing as "direct" just because the buy happened in a later session.
+  // Only overwrites the stored value on a genuine external entry -- internal
+  // site navigation (referrer on our own hostname) never clears it, so the
+  // original entry channel survives however many pages/sessions later the
+  // buyer actually checks out.
+  (function () {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var utm = params.get("utm_source");
+      if (utm) {
+        localStorage.setItem("ffo_source", utm.slice(0, 100));
+        return;
+      }
+      var ref = document.referrer;
+      if (!ref) return;
+      var refHost = new URL(ref).hostname;
+      if (refHost && refHost !== window.location.hostname) {
+        localStorage.setItem("ffo_source", refHost.slice(0, 100));
+      }
+    } catch (e) {
+      // localStorage blocked (private mode, etc.) or a malformed referrer --
+      // checkout just falls back to "direct", never breaks the page.
+    }
+  })();
+
   // --- Mobile nav toggle ---
   var toggle = document.getElementById("nav-toggle");
   var nav = document.getElementById("site-nav");
@@ -558,7 +587,14 @@
       // page the buyer was actually on (piece page, homepage globe, etc.)
       // instead of a fixed fallback -- Worker validates this is same-origin
       // before using it.
-      body: JSON.stringify({ code: code, type: type || "digital", returnUrl: window.location.href }),
+      body: JSON.stringify({
+        code: code,
+        type: type || "digital",
+        returnUrl: window.location.href,
+        source: (function () {
+          try { return localStorage.getItem("ffo_source") || "direct"; } catch (e) { return "direct"; }
+        })(),
+      }),
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {

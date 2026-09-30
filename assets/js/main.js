@@ -225,6 +225,17 @@
         openOverlay(mainImage.getAttribute("data-wall"), mainImage.alt + " (shown on a wall)", true);
       });
     }
+    // "See it on a wall" link inside the canvas-details toggle (added 2026-09-30) —
+    // opens the same overlay as the VIEW ON A WALL button.
+    var wallLinks = document.querySelectorAll(".wall-view-link");
+    if (wallToggle) {
+      wallLinks.forEach(function (a) {
+        a.addEventListener("click", function (e) {
+          e.preventDefault();
+          wallToggle.click();
+        });
+      });
+    }
     overlay.addEventListener("click", closeOverlay);
   }
 

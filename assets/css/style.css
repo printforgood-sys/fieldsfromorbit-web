@@ -1044,9 +1044,9 @@ html.lightbox-open body { overflow: hidden; height: 100%; }
 .download-details ul { margin: 10px 0 2px; padding-left: 1.1em; }
 .download-details li { font-size: 13px; line-height: 1.5; color: var(--ink); margin: 0 0 8px; }
 
-/* --- Mobile sticky gift bar (added 2026-10-06, STICKY_GIFT_PIECES in build_site.py) --- */
-.sticky-gift { display: none; }
-@media (max-width: 760px) {
+/* --- Sticky gift bar (added 2026-10-06, STICKY_GIFT_PIECES in build_site.py) ---
+   Full-width bar on phones; corner card on wider screens (desktop added 2026-10-06). */
+@media all {
   .sticky-gift {
     display: block;
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
@@ -1077,4 +1077,14 @@ html.lightbox-open body { overflow: hidden; height: 100%; }
   .sticky-gift-consent a { color: var(--faint); }
   .sticky-gift-thanks { margin: 0; padding: 0; border: 0; background: none; }
   body.has-sticky-gift { padding-bottom: 150px; }
+}
+@media (min-width: 761px) {
+  .sticky-gift {
+    left: auto; right: 24px; bottom: 24px; width: 360px;
+    border: 1px solid var(--rule); border-radius: 6px;
+    padding: 16px 18px 14px 18px;
+    transform: translateY(calc(100% + 48px));
+  }
+  .sticky-gift-thumb { width: 60px; }
+  body.has-sticky-gift { padding-bottom: 0; }
 }

@@ -807,4 +807,44 @@
       });
     });
   });
+
+  // --- Mobile sticky gift bar (added 2026-10-06, see STICKY_GIFT_PIECES in
+  // build_site.py). Hidden on desktop by CSS. Slides up once the visitor has
+  // scrolled past roughly the first screen, stays closed once dismissed
+  // (remembered per browser, best-effort), and stays open after signup so
+  // the download link is visible. The signup itself is handled by the shared
+  // .free-gift-form listener above.
+  var stickyGift = document.getElementById("sticky-gift");
+  if (stickyGift) {
+    var sgKey = "ffoStickyGiftClosed:" + (stickyGift.getAttribute("data-code") || "");
+    var sgClosed = false;
+    try { sgClosed = localStorage.getItem(sgKey) === "1"; } catch (e) {}
+    if (!sgClosed) {
+      stickyGift.hidden = false;
+      var sgShown = false;
+      var sgCheck = function () {
+        if (sgShown) return;
+        // Wait for the cookie banner (also bottom-fixed) to be dismissed
+        // first, so the two never stack on top of each other.
+        var cb = document.getElementById("cookie-banner");
+        if (cb && cb.classList.contains("show")) return;
+        if (window.scrollY > window.innerHeight * 0.6) {
+          sgShown = true;
+          stickyGift.classList.add("open");
+          document.body.classList.add("has-sticky-gift");
+          window.removeEventListener("scroll", sgCheck);
+        }
+      };
+      window.addEventListener("scroll", sgCheck, { passive: true });
+      var cbBtn = document.getElementById("cookie-accept");
+      if (cbBtn) cbBtn.addEventListener("click", function () { setTimeout(sgCheck, 300); });
+      sgCheck();
+      stickyGift.querySelector(".sticky-gift-close").addEventListener("click", function () {
+        stickyGift.classList.remove("open");
+        document.body.classList.remove("has-sticky-gift");
+        try { localStorage.setItem(sgKey, "1"); } catch (e) {}
+        setTimeout(function () { stickyGift.hidden = true; }, 400);
+      });
+    }
+  }
 })();

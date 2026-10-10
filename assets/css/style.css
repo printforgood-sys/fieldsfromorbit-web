@@ -1088,3 +1088,27 @@ html.lightbox-open body { overflow: hidden; height: 100%; }
   .sticky-gift-thumb { width: 60px; }
   body.has-sticky-gift { padding-bottom: 0; }
 }
+
+/* Free-offer teaser under the piece image (2026-10-10), shown only on
+   FREE_WITH_SIGNUP_PIECES pages so "free" is visible on the first phone screen. */
+.free-teaser {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; max-width: 380px; box-sizing: border-box;
+  margin: 8px auto 4px auto; padding: 7px 12px;
+  background: #fbf6e9; border: 1px solid #c9a24a; border-radius: 6px;
+  color: var(--ink); text-decoration: none; text-align: left;
+  font-size: 15px; line-height: 1.25;
+}
+.free-teaser:hover, .free-teaser:focus { background: #f6ecd2; }
+.free-teaser-tag {
+  flex: none; background: #b8892c; color: #fff; font-weight: 700;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 8px; border-radius: 3px;
+}
+.free-teaser-text { flex: 1 1 auto; font-weight: 600; }
+.free-teaser-arrow { flex: none; font-size: 17px; color: #b8892c; }
+.free-gift-line { scroll-margin-top: 16px; }
+/* The free line isn't a link, so it shouldn't take the paid buy-line hover
+   (dark green pill behind green text was unreadable). */
+.free-gift-line:hover { background: none; }
+.free-gift-line:hover .buy-price-free { background: none; }

@@ -230,15 +230,17 @@
     }
     // "See it on a wall" link inside the canvas-details toggle (added 2026-09-30) —
     // opens the same overlay as the VIEW ON A WALL button.
+    // Since 2026-10-13 the old VIEW ON A WALL button is gone; the link now
+    // switches the main image to the arrows' "On a wall" view and scrolls to it.
     var wallLinks = document.querySelectorAll(".wall-view-link");
-    if (wallToggle) {
-      wallLinks.forEach(function (a) {
-        a.addEventListener("click", function (e) {
-          e.preventDefault();
-          wallToggle.click();
-        });
+    wallLinks.forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (window.ffoShowView) window.ffoShowView("wall");
+        var band = document.querySelector(".image-frame-bg");
+        if (band) band.scrollIntoView({ behavior: "smooth", block: "center" });
       });
-    }
+    });
     overlay.addEventListener("click", closeOverlay);
   }
 
@@ -944,5 +946,8 @@
       slides.forEach(function (s) { if (s.key !== "poster") { var p = new Image(); p.src = s.src; } });
     }, { once: true });
   });
+  window.ffoShowView = function (key) {
+    for (var k = 0; k < slides.length; k++) if (slides[k].key === key) { show(k); return; }
+  };
   show(0);
 })();

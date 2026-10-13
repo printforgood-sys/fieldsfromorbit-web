@@ -70,7 +70,7 @@
   <p class="place-line" style="margin-bottom:20px;">Rio Doce mouth, Regência, Espírito Santo, Brazil</p>
 
   <div class="confirm-poster">
-    <img src="../../assets/img/FFO-BR-007/wall-mockup.jpg" width="800" height="800"
+    <img id="canvas-hero" src="../../assets/img/FFO-BR-007/wall-mockup.jpg" data-en="../../assets/img/FFO-BR-007/wall-mockup.jpg" data-pt="../../assets/img/FFO-BR-007/wall-mockup-pt.jpg" width="800" height="800"
          alt="Where the Turtles Meet No. 2 — 16x20 gallery-wrapped canvas print of Rio Doce mouth, Regência, Espírito Santo, Brazil shown hanging on a wall">
   </div>
 
@@ -83,6 +83,10 @@
     <label style="display:block;margin:6px 0;"><input type="radio" name="print-lang" value="en" checked> English</label>
     <label style="display:block;margin:6px 0;"><input type="radio" name="print-lang" value="pt"> Portugu&ecirc;s (Brazilian Portuguese)</label>
   </fieldset>
+  <script>
+  (function(){var h=document.getElementById("canvas-hero");if(!h)return;
+  document.querySelectorAll('input[name="print-lang"]').forEach(function(r){r.addEventListener("change",function(){h.src=h.getAttribute(r.value==="pt"?"data-pt":"data-en");});});})();
+  </script>
   <div class="confirm-cta confirm-cta-top">
 <button class="buy-btn stripe-checkout-btn" type="button" data-code="FFO-BR-007" data-type="canvas" data-title="Where the Turtles Meet No. 2">Continue to secure checkout &rarr;</button>
 <p class="checkout-trust"><svg class="lock-icon" viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M5 7V4.8a3 3 0 0 1 6 0V7" fill="none" stroke="currentColor" stroke-width="1.3"/></svg><span>Secure checkout via Stripe</span><span class="checkout-trust-sep">&middot;</span><span>Visa &middot; Mastercard &middot; Amex &middot; Apple Pay</span></p>

@@ -892,7 +892,7 @@
   var baseAlt = img.alt;
   var slides = [{ key: "poster", label: "Poster", src: img.getAttribute("data-poster") || img.src, pt: img.getAttribute("data-poster-pt"), alt: baseAlt }];
   var lang = "en";
-  if (img.getAttribute("data-wall")) slides.push({ key: "wall", label: "On a wall", src: img.getAttribute("data-wall"), alt: baseAlt + " (shown on a wall)" });
+  if (img.getAttribute("data-wall")) slides.push({ key: "wall", label: "On a wall", src: img.getAttribute("data-wall"), pt: img.getAttribute("data-wall-pt"), alt: baseAlt + " (shown on a wall)" });
   if (img.getAttribute("data-art")) slides.push({ key: "art", label: "Image only", src: img.getAttribute("data-art"), pt: img.getAttribute("data-art-pt"), alt: baseAlt + " (satellite image only, no label)" });
   if (slides.length < 2) return;
   var i = 0, posterH = 0;

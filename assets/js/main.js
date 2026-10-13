@@ -606,6 +606,10 @@
       body: JSON.stringify({
         code: code,
         type: type || "digital",
+        lang: (function () {
+          var r = document.querySelector('input[name="print-lang"]:checked');
+          return r ? r.value : "en";
+        })(),
         returnUrl: window.location.href,
         source: (function () {
           try { return localStorage.getItem("ffo_source") || "direct"; } catch (e) { return "direct"; }
@@ -886,9 +890,10 @@
   var band = document.querySelector(".image-frame-bg");
   if (!img || !band) return;
   var baseAlt = img.alt;
-  var slides = [{ key: "poster", label: "Poster", src: img.getAttribute("data-poster") || img.src, alt: baseAlt }];
+  var slides = [{ key: "poster", label: "Poster", src: img.getAttribute("data-poster") || img.src, pt: img.getAttribute("data-poster-pt"), alt: baseAlt }];
+  var lang = "en";
   if (img.getAttribute("data-wall")) slides.push({ key: "wall", label: "On a wall", src: img.getAttribute("data-wall"), alt: baseAlt + " (shown on a wall)" });
-  if (img.getAttribute("data-art")) slides.push({ key: "art", label: "Image only", src: img.getAttribute("data-art"), alt: baseAlt + " (satellite image only, no label)" });
+  if (img.getAttribute("data-art")) slides.push({ key: "art", label: "Image only", src: img.getAttribute("data-art"), pt: img.getAttribute("data-art-pt"), alt: baseAlt + " (satellite image only, no label)" });
   if (slides.length < 2) return;
   var i = 0, posterH = 0;
 
@@ -911,6 +916,31 @@
   });
   band.insertAdjacentElement("afterend", dots);
 
+  // Portuguese edition switch (Where the Turtles Meet No. 1 and No. 2).
+  if (img.getAttribute("data-poster-pt")) {
+    var langBar = document.createElement("div");
+    langBar.className = "slide-dots lang-dots";
+    [["en", "English"], ["pt", "Portugu\u00eas"]].forEach(function (L) {
+      var b = document.createElement("button");
+      b.type = "button"; b.textContent = L[1]; b.setAttribute("data-lang", L[0]);
+      b.className = L[0] === "en" ? "active" : "";
+      b.addEventListener("click", function () {
+        lang = L[0];
+        Array.prototype.forEach.call(langBar.children, function (x) {
+          x.classList.toggle("active", x === b);
+          x.setAttribute("aria-pressed", x === b ? "true" : "false");
+        });
+        var art = img.getAttribute("data-art-pt");
+        var origArt = img.getAttribute("data-art-en") || img.getAttribute("data-art");
+        if (!img.getAttribute("data-art-en")) img.setAttribute("data-art-en", origArt);
+        img.setAttribute("data-art", lang === "pt" ? art : img.getAttribute("data-art-en"));
+        show(i);
+      });
+      langBar.appendChild(b);
+    });
+    dots.insertAdjacentElement("afterend", langBar);
+  }
+
   function show(n) {
     if (i === 0) posterH = img.getBoundingClientRect().height;
     i = (n + slides.length) % slides.length;
@@ -920,7 +950,7 @@
     } else if (posterH) {
       img.style.height = posterH + "px"; img.style.objectFit = "contain";
     }
-    img.src = s.src; img.alt = s.alt;
+    img.src = (lang === "pt" && s.pt) ? s.pt : s.src; img.alt = s.alt;
     img.setAttribute("data-slide", s.key);
     img.classList.toggle("is-alt-view", s.key !== "poster");
     Array.prototype.forEach.call(dots.children, function (d, k) {

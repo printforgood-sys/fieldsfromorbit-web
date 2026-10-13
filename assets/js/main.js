@@ -207,7 +207,10 @@
 
     mainImage.addEventListener("click", function () {
       // Full-resolution, scrollable — the point here is inspecting detail.
-      openOverlay(mainImage.src, mainImage.alt, false);
+      // Poster opens full-resolution for detail; the wall / image-only
+      // views (piece-page arrows, 2026-10-13) open fit-to-screen instead.
+      var slide = mainImage.getAttribute("data-slide");
+      openOverlay(mainImage.src, mainImage.alt, !!slide && slide !== "poster");
     });
     if (posterToggle) {
       posterToggle.addEventListener("click", function () {
@@ -869,4 +872,77 @@
     var card = e.target.closest && e.target.closest('.card');
     if (card) prime(card);
   });
+})();
+
+
+// Piece page: arrows in the black band to cycle the main image between the
+// poster, the poster on a wall, and the satellite image only (2026-10-13).
+// The poster (with its museum label) is always the first view. Non-poster
+// views are held at the poster's on-screen height so the band never jumps.
+(function () {
+  var img = document.getElementById("main-image");
+  var band = document.querySelector(".image-frame-bg");
+  if (!img || !band) return;
+  var baseAlt = img.alt;
+  var slides = [{ key: "poster", label: "Poster", src: img.getAttribute("data-poster") || img.src, alt: baseAlt }];
+  if (img.getAttribute("data-wall")) slides.push({ key: "wall", label: "On a wall", src: img.getAttribute("data-wall"), alt: baseAlt + " (shown on a wall)" });
+  if (img.getAttribute("data-art")) slides.push({ key: "art", label: "Image only", src: img.getAttribute("data-art"), alt: baseAlt + " (satellite image only, no label)" });
+  if (slides.length < 2) return;
+  var i = 0, posterH = 0;
+
+  function mk(cls, label, glyph) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "slide-arrow " + cls;
+    b.setAttribute("aria-label", label); b.innerHTML = glyph;
+    band.appendChild(b); return b;
+  }
+  var prev = mk("slide-prev", "Previous view", "&#8249;");
+  var next = mk("slide-next", "Next view", "&#8250;");
+
+  var dots = document.createElement("div");
+  dots.className = "slide-dots";
+  slides.forEach(function (s, n) {
+    var d = document.createElement("button");
+    d.type = "button"; d.textContent = s.label;
+    d.addEventListener("click", function () { show(n); });
+    dots.appendChild(d);
+  });
+  band.insertAdjacentElement("afterend", dots);
+
+  function show(n) {
+    if (i === 0) posterH = img.getBoundingClientRect().height;
+    i = (n + slides.length) % slides.length;
+    var s = slides[i];
+    if (s.key === "poster") {
+      img.style.height = ""; img.style.objectFit = "";
+    } else if (posterH) {
+      img.style.height = posterH + "px"; img.style.objectFit = "contain";
+    }
+    img.src = s.src; img.alt = s.alt;
+    img.setAttribute("data-slide", s.key);
+    img.classList.toggle("is-alt-view", s.key !== "poster");
+    Array.prototype.forEach.call(dots.children, function (d, k) {
+      d.classList.toggle("active", k === i);
+      d.setAttribute("aria-pressed", k === i ? "true" : "false");
+    });
+  }
+  prev.addEventListener("click", function () { show(i - 1); });
+  next.addEventListener("click", function () { show(i + 1); });
+  document.addEventListener("keydown", function (e) {
+    if (document.documentElement.classList.contains("lightbox-open")) return;
+    var t = e.target.tagName;
+    if (t === "INPUT" || t === "TEXTAREA" || t === "SELECT") return;
+    if (e.key === "ArrowLeft") show(i - 1);
+    if (e.key === "ArrowRight") show(i + 1);
+  });
+  window.addEventListener("resize", function () {
+    if (i !== 0) { img.style.height = ""; img.style.objectFit = ""; show(0); }
+  });
+  // Warm the wall image when someone reaches for an arrow.
+  [prev, next].forEach(function (b) {
+    b.addEventListener("mouseenter", function () {
+      slides.forEach(function (s) { if (s.key !== "poster") { var p = new Image(); p.src = s.src; } });
+    }, { once: true });
+  });
+  show(0);
 })();

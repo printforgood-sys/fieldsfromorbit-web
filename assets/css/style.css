@@ -1146,3 +1146,50 @@ html.lightbox-open body { overflow: hidden; height: 100%; }
   color: var(--faint);
   text-align: center;
 }
+
+
+/* Piece page view arrows (2026-10-13): prev/next buttons sit in the black
+   band either side of the poster and cycle Poster / On a wall / Image only.
+   Labels under the band show which view is on and can be clicked too. */
+.image-frame-bg { position: relative; }
+.slide-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(247, 245, 240, 0.35);
+  background: rgba(247, 245, 240, 0.12);
+  color: #f7f5f0;
+  font-size: 30px;
+  line-height: 1;
+  padding: 0 0 4px;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.15s ease;
+}
+.slide-arrow:hover, .slide-arrow:focus-visible { background: rgba(247, 245, 240, 0.3); }
+.slide-arrow:focus-visible { outline: 2px solid #f7f5f0; outline-offset: 2px; }
+.slide-prev { left: 16px; }
+.slide-next { right: 16px; }
+@media (max-width: 899px) {
+  .slide-arrow { width: 36px; height: 36px; font-size: 24px; background: rgba(0, 0, 0, 0.45); }
+  .slide-prev { left: 6px; }
+  .slide-next { right: 6px; }
+}
+.image-stage img.zoomable.is-alt-view { border-color: transparent; }
+.slide-dots { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 10px 0 4px; }
+.slide-dots button {
+  font-family: 'DejaVu Sans Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--faint);
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.slide-dots button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }

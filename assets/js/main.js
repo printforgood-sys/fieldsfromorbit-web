@@ -487,7 +487,7 @@
         var c = item.getAttribute("data-collection");
         var country = item.getAttribute("data-country");
         var show =
-          (activeCollection === "all" || c === activeCollection) &&
+          (activeCollection === "all" || (" " + c + " ").indexOf(" " + activeCollection + " ") > -1) &&
           (activeCountry === "all" || country === activeCountry);
         item.style.display = show ? "" : "none";
       });

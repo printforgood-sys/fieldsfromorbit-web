@@ -848,3 +848,25 @@
     }
   }
 })();
+
+// Gallery grid hover-to-room (2026-10-13). Load each card's wall mockup on
+// the first mouse hover only, then let CSS fade it in. Touch devices skip
+// this entirely, so phones never download the extra images.
+(function () {
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+  function prime(card) {
+    var wall = card.querySelector('img.card-wall[data-src]');
+    if (!wall) return;
+    wall.addEventListener('load', function () { wall.classList.add('is-loaded'); }, { once: true });
+    wall.src = wall.getAttribute('data-src');
+    wall.removeAttribute('data-src');
+  }
+  document.addEventListener('mouseover', function (e) {
+    var card = e.target.closest && e.target.closest('.card');
+    if (card) prime(card);
+  });
+  document.addEventListener('focusin', function (e) {
+    var card = e.target.closest && e.target.closest('.card');
+    if (card) prime(card);
+  });
+})();

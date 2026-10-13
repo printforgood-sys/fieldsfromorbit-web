@@ -1112,3 +1112,37 @@ html.lightbox-open body { overflow: hidden; height: 100%; }
    (dark green pill behind green text was unreadable). */
 .free-gift-line:hover { background: none; }
 .free-gift-line:hover .buy-price-free { background: none; }
+
+/* Gallery grid hover-to-room (2026-10-13). On mouse hover, pieces with a
+   wall mockup fade to the same poster hanging in the room. The 800x800
+   mockup is shown at 147% of the card width and shifted left so the crop
+   frames the canvas (x 201-745, y 0-680 of the source), matching the
+   poster's tall shape so the card never changes size. */
+.card-img { position: relative; }
+.card-img img.card-wall {
+  position: absolute;
+  top: 0;
+  left: -36.95%;
+  width: 147.06%;
+  max-width: none;
+  height: auto;
+  object-fit: fill;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .card:hover .card-img img.card-wall.is-loaded,
+  .card:focus-visible .card-img img.card-wall.is-loaded { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-img img.card-wall { transition: none; }
+}
+.label-note {
+  max-width: 1100px;
+  margin: 0 auto 20px;
+  padding: 0 16px;
+  font-size: 15px;
+  color: var(--faint);
+  text-align: center;
+}
